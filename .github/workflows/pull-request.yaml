@@ -7,9 +7,6 @@ on:
       - reopened
       - ready_for_review
       - synchronize
-    paths:
-      - mdoc-builder/**
-      - .github/workflows/pull-request.yml
     secrets:
       SONAR_TOKEN:
         required: true
