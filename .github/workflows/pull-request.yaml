@@ -1,16 +1,22 @@
-name: Mdoc Builder - SonarQube Analysis
+name: Mdoc Builder - Pull Request Checks
 
 on:
-  workflow_call:
-    inputs:
-      gitRef:
-        description: Branch name or commit SHA
-        required: false
-        default: main
-        type: string
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - synchronize
+    paths:
+      - mdoc-builder/**
+      - .github/workflows/pull-request.yml
     secrets:
       SONAR_TOKEN:
         required: true
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   run-code-quality-and-security-analysis:
