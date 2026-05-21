@@ -1,11 +1,43 @@
-name: Basic Workflow
+name: Mdoc Builder - SonarQube Analysis
 
 on:
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      gitRef:
+        description: Branch name or commit SHA
+        required: false
+        default: main
+        type: string
+    secrets:
+      SONAR_TOKEN:
+        required: true
 
 jobs:
-  checkout:
-    runs-on: ubuntu-latest
+  run-code-quality-and-security-analysis:
+    name: Run code quality and security analysis
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Check out repository code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.gitRef }}
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@59db25f34e16620e48ab4bb9e4a5dce155cb5432 # v8.0.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectBaseDir: ./mdoc-builder
+
+      - name: SonarQube Quality Gate check
+        uses: SonarSource/sonarqube-quality-gate-action@cf038b0e0cdecfa9e56c198bbb7d21d751d62c3b # v1.2.0
+        timeout-minutes: 15
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          scanMetadataReportFile: mdoc-builder/.scannerwork/report-task.txt
