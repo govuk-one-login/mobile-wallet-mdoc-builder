@@ -7,9 +7,6 @@ on:
       - reopened
       - ready_for_review
       - synchronize
-    secrets:
-      SONAR_TOKEN:
-        required: true
 
 permissions:
   id-token: write
