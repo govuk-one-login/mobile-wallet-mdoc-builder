@@ -21,3 +21,11 @@ jobs:
     uses: ./.github/workflows/sonarqube.yaml
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  lint-and-format:
+    name: Lint and format
+    uses: ./.github/workflows/lint-and-format.yaml
+
+  conventional-commits:
+    name: Conventional commits
+    uses: ./.github/workflows/conventional-commits.yaml
