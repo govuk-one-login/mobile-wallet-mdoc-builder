@@ -1,0 +1,20 @@
+name: Mdoc Builder - Push to Main
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  run-code-quality-and-security-analysis:
+    name: Run code quality and security analysis
+    uses: ./.github/workflows/sonarqube.yaml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
