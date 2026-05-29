@@ -1,0 +1,19 @@
+repos:
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        entry: npm run lint
+        language: node
+        pass_filenames: false
+      - id: prettier
+        name: prettier
+        entry: npm run format:check
+        language: node
+        pass_filenames: false
