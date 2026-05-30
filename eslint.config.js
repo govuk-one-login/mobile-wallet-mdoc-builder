@@ -1,8 +1,9 @@
 import tseslint from "typescript-eslint";
+import { defineConfig } from "eslint/config";
 
-export default tseslint.config({
+export default defineConfig({
   files: ["**/*.ts"],
-  extends: [...tseslint.configs.strictTypeChecked],
+  extends: tseslint.configs.strictTypeChecked,
   languageOptions: {
     parserOptions: {
       project: true,
