@@ -11,9 +11,10 @@ repos:
         name: eslint
         entry: npm run lint
         language: node
-        pass_filenames: false
+        stages: [pre-commit]
+
       - id: prettier
         name: prettier
         entry: npm run format:check
         language: node
-        pass_filenames: false
+        stages: [pre-commit]
