@@ -4,6 +4,7 @@ on:
   pull_request:
     types:
       - opened
+      - edited
       - reopened
       - ready_for_review
       - synchronize
@@ -18,7 +19,7 @@ concurrency:
 jobs:
   run-code-quality-and-security-analysis:
     name: Run code quality and security analysis
-    if: github.actor != 'dependabot[bot]'
+    if: github.triggering_actor != 'dependabot[bot]'
     uses: ./.github/workflows/sonarqube.yaml
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -30,3 +31,7 @@ jobs:
   conventional-commits:
     name: Conventional commits
     uses: ./.github/workflows/conventional-commits.yaml
+
+  conventional-pr-title:
+    name: Conventional PR title
+    uses: ./.github/workflows/conventional-pr-title.yaml

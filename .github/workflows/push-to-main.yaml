@@ -15,7 +15,6 @@ concurrency:
 jobs:
   run-code-quality-and-security-analysis:
     name: Run code quality and security analysis
-    if: github.actor != 'dependabot[bot]'
     uses: ./.github/workflows/sonarqube.yaml
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
