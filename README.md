@@ -49,7 +49,7 @@ This project uses [pre-commit](https://pre-commit.com/) to enforce code quality 
 
 Ensure your branch is up to date and all hooks pass before opening a pull request. Avoid using the git `--no-verify` flag to skip these checks unless absolutely necessary.
 
-### Installation
+### Installing pre-commit hooks
 
 ```bash
 brew install pre-commit
