@@ -18,3 +18,7 @@ jobs:
     uses: ./.github/workflows/sonarqube.yaml
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  typecheck-lint-format:
+    name: Lint and format
+    uses: ./.github/workflows/typecheck-lint-format.yaml
