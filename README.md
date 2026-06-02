@@ -4,7 +4,8 @@
 
 ## Overview
 
-A TypeScript library for building mdoc (ISO 18013-5) documents for use with GOV.UK Wallet. It provides a type-safe API for constructing and encoding mobile driving licence and other mdoc-based credentials.
+A TypeScript library for building mdoc (ISO 18013-5) documents for use with GOV.UK Wallet. It provides a type-safe API
+for constructing and encoding mdoc-based credentials.
 
 ## Tech stack
 
