@@ -29,7 +29,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run --coverage",
-    "test:smoke": "npm run build && vitest run --config vitest.config.smoke.ts"
+    "test:component": "npm run build && vitest run --config vitest.config.component.ts"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.1.9",
