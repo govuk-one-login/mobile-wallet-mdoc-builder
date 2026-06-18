@@ -4,7 +4,6 @@ on:
   pull_request:
     types:
       - opened
-      - edited
       - reopened
       - ready_for_review
       - synchronize
@@ -31,9 +30,3 @@ jobs:
   conventional-commits:
     name: Conventional commits
     uses: ./.github/workflows/conventional-commits.yaml
-
-  conventional-pr-title:
-    name: Conventional PR title
-    permissions:
-      pull-requests: read
-    uses: ./.github/workflows/conventional-pr-title.yaml
