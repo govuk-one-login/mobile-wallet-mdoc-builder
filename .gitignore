@@ -19,3 +19,5 @@ context/*
 node_modules/
 dist/
 *.tsbuildinfo
+
+coverage/**
