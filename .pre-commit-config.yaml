@@ -18,3 +18,10 @@ repos:
         entry: npm run format:check
         language: node
         stages: [pre-commit]
+
+      - id: typecheck
+        name: typecheck
+        entry: npm run typecheck
+        language: node
+        stages: [pre-commit]
+        pass_filenames: false
