@@ -27,3 +27,10 @@ repos:
         language: node
         stages: [pre-commit]
         pass_filenames: false
+
+      - id: test
+        name: test
+        entry: npm test
+        language: node
+        stages: [pre-push]
+        pass_filenames: false
