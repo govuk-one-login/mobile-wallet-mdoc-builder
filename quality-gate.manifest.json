@@ -1,0 +1,43 @@
+{
+  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.1.0/schemas/schema.json",
+  "services": [
+    {
+      "service-tag": "mobile-wallet-mdoc-builder",
+      "quality-gates": [
+        {
+          "phase": "pre-merge",
+          "provider": "GitHub",
+          "config": {
+            "file": ".github/workflows/pull-request-checks.yaml",
+            "path": "jobs.conventional-commits"
+          },
+          "check-types": ["code style and linting"]
+        },
+        {
+          "phase": "pre-merge",
+          "provider": "GitHub",
+          "config": {
+            "file": ".github/workflows/pull-request-checks.yaml",
+            "path": "jobs.build-and-component-tests"
+          },
+          "check-types": ["integration"]
+        },
+        {
+          "phase": "pre-merge",
+          "provider": "GitHub",
+          "config": {
+            "file": ".github/workflows/pull-request-checks.yaml",
+            "path": "jobs.run-code-quality-and-security-analysis"
+          },
+          "check-types": [
+            "unit",
+            "unit test coverage",
+            "code quality",
+            "vulnerability detection",
+            "secret scanning"
+          ]
+        }
+      ]
+    }
+  ]
+}
