@@ -1,0 +1,37 @@
+name: Build and Component Tests
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-component-tests:
+    name: Build and component tests (Node ${{ matrix.node }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Setup Node.js ${{ matrix.node }}
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build
+        run: npm run build
+
+      - name: Run component tests
+        run: npm run test:component:ci
