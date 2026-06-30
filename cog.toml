@@ -1,0 +1,2 @@
+disable_changelog = true
+disable_bump_commit = true
