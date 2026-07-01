@@ -2,7 +2,8 @@
   "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.13.0/schemas/schema.json",
   "services": [
     {
-      "serviceTag": "mobile-wallet-mdoc-builder",
+      "product": "Mobile Wallet",
+      "component": "mobile-wallet-mdoc-builder",
       "promotionType": "library",
       "checks": [
         {
