@@ -1,41 +1,46 @@
 {
-  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.1.0/schemas/schema.json",
+  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.13.0/schemas/schema.json",
   "services": [
     {
-      "service-tag": "mobile-wallet-mdoc-builder",
-      "quality-gates": [
+      "serviceTag": "mobile-wallet-mdoc-builder",
+      "promotionType": "library",
+      "checks": [
         {
+          "checkTypes": [
+            "code style and linting"
+          ],
           "phase": "pre-merge",
           "provider": "GitHub",
           "config": {
             "file": ".github/workflows/pull-request-checks.yaml",
-            "path": "jobs.conventional-commits"
-          },
-          "check-types": ["code style and linting"]
+            "path": "$.jobs.conventional-commits"
+          }
         },
         {
+          "checkTypes": [
+            "integration"
+          ],
           "phase": "pre-merge",
           "provider": "GitHub",
           "config": {
             "file": ".github/workflows/pull-request-checks.yaml",
-            "path": "jobs.build-and-component-tests"
-          },
-          "check-types": ["integration"]
+            "path": "$.jobs.build-and-component-tests"
+          }
         },
         {
-          "phase": "pre-merge",
-          "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/pull-request-checks.yaml",
-            "path": "jobs.run-code-quality-and-security-analysis"
-          },
-          "check-types": [
+          "checkTypes": [
             "unit",
             "unit test coverage",
             "code quality",
             "vulnerability detection",
             "secret scanning"
-          ]
+          ],
+          "phase": "pre-merge",
+          "provider": "GitHub",
+          "config": {
+            "file": ".github/workflows/pull-request-checks.yaml",
+            "path": "$.jobs.run-code-quality-and-security-analysis"
+          }
         }
       ]
     }
