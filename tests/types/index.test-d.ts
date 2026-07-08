@@ -1,9 +1,21 @@
 import { describe, expectTypeOf, it } from "vitest";
-import { helloWorld } from "../../src/index.js";
+import { buildMdoc } from "../../src/index.js";
+import type {
+  Mdoc,
+  MdocBuilderInput,
+  SigningFunction,
+} from "../../src/index.js";
 
-describe("helloWorld", () => {
-  it("accepts a string parameter and returns a string", () => {
-    expectTypeOf(helloWorld).parameter(0).toBeString();
-    expectTypeOf(helloWorld).returns.toBeString();
+describe("buildMdoc", () => {
+  it("returns Promise<Mdoc>", () => {
+    expectTypeOf(buildMdoc).returns.toExtend<Promise<Mdoc>>();
+  });
+
+  it("accepts MdocBuilderInput as first parameter", () => {
+    expectTypeOf(buildMdoc).parameter(0).toExtend<MdocBuilderInput>();
+  });
+
+  it("accepts SigningFunction as second parameter", () => {
+    expectTypeOf(buildMdoc).parameter(1).toExtend<SigningFunction>();
   });
 });
