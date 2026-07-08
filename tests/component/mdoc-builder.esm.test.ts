@@ -1,6 +1,10 @@
 import { expect, it } from "vitest";
-import { helloWorld } from "../../dist/index.js";
+import { buildMdoc, MdocBuilderError } from "../../dist/index.js";
+import { MdocBuilderInput } from "../../src";
 
-it("returns a greeting with the provided name", () => {
-  expect(helloWorld("World")).toBe("Hello World!");
+it("buildMdoc rejects with MdocBuilderError", async () => {
+  const input = {} as unknown as MdocBuilderInput;
+  const sign = async () => new Uint8Array();
+
+  await expect(buildMdoc(input, sign)).rejects.toThrow(MdocBuilderError);
 });

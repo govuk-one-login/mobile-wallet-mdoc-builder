@@ -1,5 +1,8 @@
-const { helloWorld } = require("../../dist/index.cjs");
+const { buildMdoc, MdocBuilderError } = require("../../dist/index.cjs");
 
-it("returns a greeting with the provided name", () => {
-  expect(helloWorld("World")).toBe("Hello World!");
+it("buildMdoc rejects with MdocBuilderError", async () => {
+  const input = {};
+  const sign = async () => new Uint8Array();
+
+  await expect(buildMdoc(input, sign)).rejects.toThrow(MdocBuilderError);
 });
