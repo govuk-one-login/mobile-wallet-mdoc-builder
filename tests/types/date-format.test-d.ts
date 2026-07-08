@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, it } from "vitest";
-import { DateFormat } from "../../src/types/date-format.js";
+import { DateFormat } from "../../src";
 
 describe("DateFormat", () => {
   it("is exactly DateFormat.FullDate | DateFormat.DateTime", () => {

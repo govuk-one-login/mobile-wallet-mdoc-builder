@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, it } from "vitest";
-import type { Mdoc } from "../../src/types/mdoc.js";
+import type { Mdoc } from "../../src";
 
 describe("Mdoc", () => {
   it("has asBase64Url returning string", () => {

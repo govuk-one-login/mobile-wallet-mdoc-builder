@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, it } from "vitest";
-import type { SigningFunction } from "../../src/types/signing-function.js";
+import type { SigningFunction } from "../../src";
 
 describe("SigningFunction", () => {
   it("accepts a function taking Uint8Array and returning Promise<Uint8Array>", () => {

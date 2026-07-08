@@ -1,10 +1,6 @@
 import { describe, expectTypeOf, it } from "vitest";
-import { buildMdoc } from "../../src/index.js";
-import type {
-  Mdoc,
-  MdocBuilderInput,
-  SigningFunction,
-} from "../../src/index.js";
+import { buildMdoc } from "../../src";
+import type { Mdoc, MdocBuilderInput, SigningFunction } from "../../src";
 
 describe("buildMdoc", () => {
   it("returns Promise<Mdoc>", () => {

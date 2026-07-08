@@ -1,8 +1,5 @@
 import { describe, expectTypeOf, it } from "vitest";
-import type {
-  DataElementValue,
-  PrimitiveElementValue,
-} from "../../src/types/data-element-value.js";
+import type { DataElementValue, PrimitiveElementValue } from "../../src";
 
 describe("PrimitiveElementValue", () => {
   it("is exactly string | number | boolean | Date | Uint8Array", () => {

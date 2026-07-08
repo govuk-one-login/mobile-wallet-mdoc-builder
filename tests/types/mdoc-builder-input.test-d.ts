@@ -1,8 +1,10 @@
 import { describe, expectTypeOf, it } from "vitest";
-import type { MdocBuilderInput } from "../../src/types/mdoc-builder-input.js";
-import type { NameSpaces } from "../../src/types/name-spaces.js";
-import type { CredentialValidity } from "../../src/types/credential-validity.js";
-import type { StatusList } from "../../src/types/status-list.js";
+import type {
+  MdocBuilderInput,
+  NameSpaces,
+  CredentialValidity,
+  StatusList,
+} from "../../src";
 
 describe("MdocBuilderInput", () => {
   it("accepts a valid full input", () => {

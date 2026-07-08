@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, it } from "vitest";
-import type { CredentialValidity } from "../../src/types/credential-validity.js";
+import type { CredentialValidity } from "../../src";
 
 describe("CredentialValidity", () => {
   it("accepts a valid object with only validUntil", () => {

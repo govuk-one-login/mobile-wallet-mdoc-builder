@@ -1,7 +1,5 @@
 import { describe, expectTypeOf, it } from "vitest";
-import type { DataElement } from "../../src/types/data-element.js";
-import type { DataElementValue } from "../../src/types/data-element-value.js";
-import type { DateFormat } from "../../src/types/date-format.js";
+import type { DataElement, DataElementValue, DateFormat } from "../../src";
 
 describe("DataElement", () => {
   it("accepts a valid DataElement with required fields", () => {

@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, it } from "vitest";
-import type { StatusList } from "../../src/types/status-list.js";
+import type { StatusList } from "../../src";
 
 describe("StatusList", () => {
   it("accepts a valid object with idx and uri", () => {

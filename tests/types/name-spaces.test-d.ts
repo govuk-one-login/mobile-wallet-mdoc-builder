@@ -1,6 +1,5 @@
 import { describe, expectTypeOf, it } from "vitest";
-import type { NameSpaces } from "../../src/types/name-spaces.js";
-import type { DataElement } from "../../src/types/data-element.js";
+import type { NameSpaces, DataElement } from "../../src";
 
 describe("NameSpaces", () => {
   it("is assignable from Map<string, DataElement[]>", () => {
