@@ -1,0 +1,70 @@
+name: Mdoc Builder - Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  run-code-quality-and-security-analysis:
+    name: Run code quality and security analysis
+    uses: ./.github/workflows/sonarqube.yaml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  typecheck-lint-format:
+    name: Lint and format
+    uses: ./.github/workflows/typecheck-lint-format.yaml
+
+  build-and-component-tests:
+    name: Build and component tests
+    uses: ./.github/workflows/build-and-component-tests.yaml
+
+  conventional-commits:
+    name: Conventional commits
+    uses: ./.github/workflows/conventional-commits.yaml
+
+  create-release:
+    name: Create release
+    needs:
+      - run-code-quality-and-security-analysis
+      - typecheck-lint-format
+      - build-and-component-tests
+      - conventional-commits
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Create semantic release
+        id: release
+        uses: cocogitto/cocogitto-action@52d0023b4396897f1815648e553db2ab8d782f3a # v4.2.0
+        with:
+          command: bump
+          args: --auto
+          git-user: "github-actions[bot]"
+          git-user-email: "github-actions[bot]@users.noreply.github.com"
+
+      - name: Push semantic version tag
+        if: steps.release.outputs.version != ''
+        run: git push --tags
+        shell: bash
+
+      - name: Create GitHub release
+        if: steps.release.outputs.version != ''
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
+        with:
+          tag_name: ${{ steps.release.outputs.version }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true

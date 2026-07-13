@@ -26,3 +26,7 @@ jobs:
   build-and-component-tests:
     name: Build and component tests
     uses: ./.github/workflows/build-and-component-tests.yaml
+
+  conventional-commits:
+    name: Conventional commits
+    uses: ./.github/workflows/conventional-commits.yaml

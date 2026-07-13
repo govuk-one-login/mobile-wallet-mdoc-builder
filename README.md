@@ -60,6 +60,30 @@ brew install pre-commit
 pre-commit install --hook-type pre-commit --hook-type commit-msg
 ```
 
+## Release process
+
+Releases are created using the [release workflow](.github/workflows/release.yml), which is triggered manually via GitHub Actions `workflow_dispatch`.
+
+When triggered from `main`, the workflow:
+
+1. Runs code quality and security analysis (SonarQube)
+2. Runs type checking, linting, and formatting checks
+3. Runs build and component tests
+4. Validates conventional commits
+5. If all checks pass, creates a semantic version tag using [cocogitto](https://docs.cocogitto.io/) based on the conventional commit history
+6. Pushes the version tag and creates a GitHub release with auto-generated release notes
+
+The version is determined automatically from commit messages following [Conventional Commits](https://www.conventionalcommits.org/) — `fix:` commits bump
+the patch version, `feat:` commits bump the minor version, and breaking changes bump the major version.
+
+### Known limitations
+
+1. **package.json version is not updated** — the semantic version tag is created but `package.json` is not bumped to
+   match. This will come in a future iteration.
+2. **No publish to a registry** — the release does not publish the package to npm or any other registry. This will come in a future release.
+3. **Manual trigger only** — the release workflow must be triggered by a human via the GitHub Actions UI. Automation
+   (e.g. triggering on merge to `main`) will come in the future.
+
 ## Licence
 
 [MIT License](LICENSE)
