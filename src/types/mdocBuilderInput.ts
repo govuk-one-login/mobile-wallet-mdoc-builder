@@ -1,6 +1,6 @@
-import type { CredentialValidity } from "./credential-validity.js";
-import type { NameSpaces } from "./name-spaces.js";
-import type { StatusList } from "./status-list.js";
+import type { CredentialValidity } from "./credentialValidity.js";
+import type { NameSpaces } from "./nameSpaces.js";
+import type { StatusList } from "./statusList.js";
 
 /**
  * The top-level input for building a mdoc document.

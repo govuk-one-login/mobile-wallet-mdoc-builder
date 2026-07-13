@@ -1,4 +1,4 @@
-import type { DataElement } from "./data-element.js";
+import type { DataElement } from "./dataElement.js";
 
 /**
  * A map of namespace identifiers to their data elements.

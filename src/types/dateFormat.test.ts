@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DateFormat } from "./date-format.js";
+import { DateFormat } from "./dateFormat.js";
 
 describe("DateFormat", () => {
   it("FullDate has value 0", () => {

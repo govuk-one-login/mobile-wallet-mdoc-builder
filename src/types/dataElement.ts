@@ -1,5 +1,5 @@
-import type { DataElementValue } from "./data-element-value.js";
-import type { DateFormat } from "./date-format.js";
+import type { DataElementValue } from "./dataElementValue.js";
+import type { DateFormat } from "./dateFormat.js";
 
 /**
  * A single data element within a namespace.

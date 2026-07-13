@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MdocBuilderError } from "./mdoc-builder-error.js";
+import { MdocBuilderError } from "./mdocBuilderError.js";
 
 describe("MdocBuilderError", () => {
   it("is an instance of Error", () => {
