@@ -96,31 +96,7 @@ graph TD
     Tag1004 -.-> ItemBuilder
     Tag24 -.-> ItemBuilder
 
-    %% Styling — high contrast, no red/green, readable on light and dark
-    classDef public fill:#1e88e5,stroke:#1565c0,color:#ffffff,stroke-width:2px
-    classDef validation fill:#f9a825,stroke:#f57f17,color:#000000
-    classDef core fill:#00838f,stroke:#006064,color:#ffffff
-    classDef signing fill:#e65100,stroke:#bf360c,color:#ffffff
-    classDef cbor fill:#7b1fa2,stroke:#4a148c,color:#ffffff
-    classDef output fill:#1e88e5,stroke:#1565c0,color:#ffffff,stroke-width:2px
-
-    class buildMdoc,MdocOutput public
-    class Validator validation
-    class SPKIImport,COSEKey,KeyAuth,ValidityResolver,ItemBuilder,DigestCompute,ValueDigests,MSOBuilder core
-    class ProtectedHeader,SigStructure,ToBeSigned,SignCallback,IssuerAuth signing
-    class Encoder,Tag0,Tag1004,Tag24 cbor
-    class IssuerSigned output
 ```
-
-## Legend
-
-| Colour | Layer                  |
-| ------ | ---------------------- |
-| Blue   | Public API             |
-| Yellow | Input Validation       |
-| Teal   | Core Domain Logic      |
-| Orange | Signing Pipeline       |
-| Purple | CBOR Abstraction Layer |
 
 ## Component Summary
 
