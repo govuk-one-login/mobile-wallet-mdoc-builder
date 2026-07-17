@@ -66,6 +66,20 @@ describe("buildDeviceKeyInfo", () => {
     });
   });
 
+  describe("COSE_Key construction", () => {
+    it("contains exactly four entries", () => {
+      const spki = generateSpki("P-256");
+      const result = buildDeviceKeyInfo(spki, ["org.iso.18013.5.1"]);
+      const coseKey = result.get("deviceKey") as Map<number, unknown>;
+      const keys = [...coseKey.keys()];
+
+      expect(coseKey.size).toBe(4);
+      expect(coseKey.get(1)).toBe(2);
+      expect(coseKey.get(-1)).toBe(1);
+      expect(keys).toEqual([1, -1, -2, -3]);
+    });
+  });
+
   describe("coordinate extraction", () => {
     it("extracts x coordinate as exactly 32 bytes", () => {
       const spki = generateSpki("P-256");
