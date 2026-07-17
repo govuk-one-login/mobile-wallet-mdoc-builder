@@ -108,6 +108,29 @@ describe("buildDeviceKeyInfo", () => {
       expect(coseKey.get(-3)).toEqual(expected.y);
     });
   });
+
+  describe("keyAuthorizations", () => {
+    it("includes all provided namespace names", () => {
+      const spki = generateSpki("P-256");
+      const namespaces = ["org.iso.18013.5.1", "org.iso.18013.5.1.GB"];
+      const result = buildDeviceKeyInfo(spki, namespaces);
+      const keyAuth = result.get("keyAuthorizations") as Map<string, unknown>;
+      expect(keyAuth.get("nameSpaces")).toEqual(namespaces);
+    });
+
+    it("includes a single namespace", () => {
+      const spki = generateSpki("P-256");
+      const result = buildDeviceKeyInfo(spki, ["org.iso.18013.5.1"]);
+      const keyAuth = result.get("keyAuthorizations") as Map<string, unknown>;
+      expect(keyAuth.get("nameSpaces")).toEqual(["org.iso.18013.5.1"]);
+    });
+
+    it("omits keyAuthorizations when namespace list is empty", () => {
+      const spki = generateSpki("P-256");
+      const result = buildDeviceKeyInfo(spki, []);
+      expect(result.has("keyAuthorizations")).toBe(false);
+    });
+  });
 });
 
 describe("padCoordinate", () => {

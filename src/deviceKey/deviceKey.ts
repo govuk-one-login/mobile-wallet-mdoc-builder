@@ -7,7 +7,6 @@ export function buildDeviceKeyInfo(
   spkiBytes: Uint8Array,
   namespaceNames: string[],
 ): Map<string, unknown> {
-  console.log("To pass eslint, will remove later", namespaceNames);
   const keyObject = importSpki(spkiBytes);
   const jwk = keyObject.export({ format: "jwk" });
 
@@ -32,6 +31,11 @@ export function buildDeviceKeyInfo(
 
   const deviceKeyInfo = new Map<string, unknown>();
   deviceKeyInfo.set("deviceKey", coseKey);
+  if (namespaceNames.length > 0) {
+    const keyAuthorizations = new Map<string, string[]>();
+    keyAuthorizations.set("nameSpaces", namespaceNames);
+    deviceKeyInfo.set("keyAuthorizations", keyAuthorizations);
+  }
   return deviceKeyInfo;
 }
 
