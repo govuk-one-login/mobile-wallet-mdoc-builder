@@ -131,6 +131,32 @@ describe("buildDeviceKeyInfo", () => {
       expect(result.has("keyAuthorizations")).toBe(false);
     });
   });
+
+  describe("DeviceKeyInfo assembly", () => {
+    it("returns a Map with deviceKey and keyAuthorizations when namespaces provided", () => {
+      const spki = generateSpki("P-256");
+      const result = buildDeviceKeyInfo(spki, ["org.iso.18013.5.1"]);
+      expect(result).toBeInstanceOf(Map);
+      expect(result.has("deviceKey")).toBe(true);
+      expect(result.has("keyAuthorizations")).toBe(true);
+      expect(result.size).toBe(2);
+    });
+
+    it("returns a Map with only deviceKey when namespaces are empty", () => {
+      const spki = generateSpki("P-256");
+      const result = buildDeviceKeyInfo(spki, []);
+      expect(result).toBeInstanceOf(Map);
+      expect(result.has("deviceKey")).toBe(true);
+      expect(result.size).toBe(1);
+    });
+
+    it("preserves insertion order: deviceKey first, keyAuthorizations second", () => {
+      const spki = generateSpki("P-256");
+      const result = buildDeviceKeyInfo(spki, ["org.iso.18013.5.1"]);
+      const keys = [...result.keys()];
+      expect(keys).toEqual(["deviceKey", "keyAuthorizations"]);
+    });
+  });
 });
 
 describe("padCoordinate", () => {
