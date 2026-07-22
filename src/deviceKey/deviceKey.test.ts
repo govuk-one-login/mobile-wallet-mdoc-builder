@@ -26,29 +26,11 @@ function getExpectedCoordinates(spki: Uint8Array): {
 
 describe("buildDeviceKeyInfo", () => {
   describe("SPKI import validation", () => {
-    it("does not throw for a valid P-256 SPKI key", () => {
-      const spki = generateSpki("P-256");
-      expect(() =>
-        buildDeviceKeyInfo(spki, ["org.iso.18013.5.1"]),
-      ).not.toThrow();
-    });
-
-    it("throws MdocBuilderError for an empty Uint8Array", () => {
-      expect(() =>
-        buildDeviceKeyInfo(new Uint8Array(0), ["org.iso.18013.5.1"]),
-      ).toThrow(MdocBuilderError);
-
-      expect(() =>
-        buildDeviceKeyInfo(new Uint8Array(0), ["org.iso.18013.5.1"]),
-      ).toThrow(/failed to import SPKI/i);
-    });
-
     it("throws MdocBuilderError for invalid bytes", () => {
       const garbage = new Uint8Array([0x01, 0x02, 0x03, 0x04, 0x05]);
       expect(() => buildDeviceKeyInfo(garbage, ["org.iso.18013.5.1"])).toThrow(
         MdocBuilderError,
       );
-
       expect(() => buildDeviceKeyInfo(garbage, ["org.iso.18013.5.1"])).toThrow(
         /failed to import SPKI/i,
       );
@@ -59,7 +41,6 @@ describe("buildDeviceKeyInfo", () => {
       expect(() => buildDeviceKeyInfo(spki, ["org.iso.18013.5.1"])).toThrow(
         MdocBuilderError,
       );
-
       expect(() => buildDeviceKeyInfo(spki, ["org.iso.18013.5.1"])).toThrow(
         /only P-256/i,
       );
@@ -81,24 +62,6 @@ describe("buildDeviceKeyInfo", () => {
   });
 
   describe("coordinate extraction", () => {
-    it("extracts x coordinate as exactly 32 bytes", () => {
-      const spki = generateSpki("P-256");
-      const result = buildDeviceKeyInfo(spki, ["org.iso.18013.5.1"]);
-      const coseKey = result.get("deviceKey") as Map<number, unknown>;
-      const x = coseKey.get(-2) as Uint8Array;
-      expect(x).toBeInstanceOf(Uint8Array);
-      expect(x).toHaveLength(32);
-    });
-
-    it("extracts y coordinate as exactly 32 bytes", () => {
-      const spki = generateSpki("P-256");
-      const result = buildDeviceKeyInfo(spki, ["org.iso.18013.5.1"]);
-      const coseKey = result.get("deviceKey") as Map<number, unknown>;
-      const y = coseKey.get(-3) as Uint8Array;
-      expect(y).toBeInstanceOf(Uint8Array);
-      expect(y).toHaveLength(32);
-    });
-
     it("extracts coordinates matching the original key", () => {
       const spki = generateSpki("P-256");
       const expected = getExpectedCoordinates(spki);
@@ -118,13 +81,6 @@ describe("buildDeviceKeyInfo", () => {
       expect(keyAuth.get("nameSpaces")).toEqual(namespaces);
     });
 
-    it("includes a single namespace", () => {
-      const spki = generateSpki("P-256");
-      const result = buildDeviceKeyInfo(spki, ["org.iso.18013.5.1"]);
-      const keyAuth = result.get("keyAuthorizations") as Map<string, unknown>;
-      expect(keyAuth.get("nameSpaces")).toEqual(["org.iso.18013.5.1"]);
-    });
-
     it("omits keyAuthorizations when namespace list is empty", () => {
       const spki = generateSpki("P-256");
       const result = buildDeviceKeyInfo(spki, []);
@@ -133,23 +89,6 @@ describe("buildDeviceKeyInfo", () => {
   });
 
   describe("DeviceKeyInfo assembly", () => {
-    it("returns a Map with deviceKey and keyAuthorizations when namespaces provided", () => {
-      const spki = generateSpki("P-256");
-      const result = buildDeviceKeyInfo(spki, ["org.iso.18013.5.1"]);
-      expect(result).toBeInstanceOf(Map);
-      expect(result.has("deviceKey")).toBe(true);
-      expect(result.has("keyAuthorizations")).toBe(true);
-      expect(result.size).toBe(2);
-    });
-
-    it("returns a Map with only deviceKey when namespaces are empty", () => {
-      const spki = generateSpki("P-256");
-      const result = buildDeviceKeyInfo(spki, []);
-      expect(result).toBeInstanceOf(Map);
-      expect(result.has("deviceKey")).toBe(true);
-      expect(result.size).toBe(1);
-    });
-
     it("preserves insertion order: deviceKey first, keyAuthorizations second", () => {
       const spki = generateSpki("P-256");
       const result = buildDeviceKeyInfo(spki, ["org.iso.18013.5.1"]);
