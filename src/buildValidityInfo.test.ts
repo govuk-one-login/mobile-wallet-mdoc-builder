@@ -50,10 +50,7 @@ describe("buildValidityInfo", () => {
   it("passes through expectedUpdate when provided", () => {
     const expectedUpdate = new Date("2026-10-24T12:00:00Z");
 
-    const result = buildValidityInfo(
-      { validUntil, expectedUpdate },
-      now,
-    );
+    const result = buildValidityInfo({ validUntil, expectedUpdate }, now);
 
     expect(result.expectedUpdate).toEqual(expectedUpdate);
   });
