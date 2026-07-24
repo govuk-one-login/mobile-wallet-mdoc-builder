@@ -1,1 +1,8 @@
-export { TaggedValue, tdate, fullDate, embeddedCbor, encode } from "./cbor.js";
+export {
+  TaggedValue,
+  tdate,
+  fullDate,
+  embeddedCbor,
+  encode,
+  decode,
+} from "./cbor.js";

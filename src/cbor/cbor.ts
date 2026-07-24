@@ -1,4 +1,4 @@
-import { Tag, encode as cborEncode } from "cbor2";
+import { Tag, encode as cborEncode, decode as cborDecode } from "cbor2";
 import { MdocBuilderError } from "../types/mdocBuilderError.js";
 
 export class TaggedValue {
@@ -59,6 +59,28 @@ function convertTags(value: unknown): unknown {
   }
   if (Array.isArray(value)) {
     return value.map(convertTags);
+  }
+  return value;
+}
+
+export function decode(bytes: Uint8Array): unknown {
+  const raw = cborDecode(bytes, { preferMap: true, ignoreGlobalTags: true });
+  return unconvertTags(raw);
+}
+
+function unconvertTags(value: unknown): unknown {
+  if (value instanceof Tag) {
+    return new TaggedValue(Number(value.tag), unconvertTags(value.contents));
+  }
+  if (value instanceof Map) {
+    const converted = new Map<unknown, unknown>();
+    for (const [k, v] of value) {
+      converted.set(unconvertTags(k), unconvertTags(v));
+    }
+    return converted;
+  }
+  if (Array.isArray(value)) {
+    return value.map(unconvertTags);
   }
   return value;
 }
