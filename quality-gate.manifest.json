@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.14.0/schemas/schema.json",
+  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.15.0/schemas/schema.json",
   "services": [
     {
       "product": "Mobile Wallet",
@@ -7,41 +7,55 @@
       "promotionType": "library",
       "automated": [
         {
-          "checkTypes": [
-            "code style and linting"
-          ],
           "phase": "pre-merge",
           "provider": "GitHub",
           "config": {
             "file": ".github/workflows/pull-request-checks.yaml",
             "path": "$.jobs.conventional-commits"
-          }
+          },
+          "checks": [
+            {
+              "name": "code style and linting"
+            }
+          ]
         },
         {
-          "checkTypes": [
-            "integration"
-          ],
           "phase": "pre-merge",
           "provider": "GitHub",
           "config": {
             "file": ".github/workflows/pull-request-checks.yaml",
             "path": "$.jobs.build-and-component-tests"
-          }
+          },
+          "checks": [
+            {
+              "name": "integration"
+            }
+          ]
         },
         {
-          "checkTypes": [
-            "unit",
-            "unit test coverage",
-            "code quality",
-            "vulnerability detection",
-            "secret scanning"
-          ],
           "phase": "pre-merge",
           "provider": "GitHub",
           "config": {
             "file": ".github/workflows/pull-request-checks.yaml",
             "path": "$.jobs.run-code-quality-and-security-analysis"
-          }
+          },
+          "checks": [
+            {
+              "name": "unit"
+            },
+            {
+              "name": "unit test coverage"
+            },
+            {
+              "name": "code quality"
+            },
+            {
+              "name": "vulnerability detection"
+            },
+            {
+              "name": "secret scanning"
+            }
+          ]
         }
       ]
     }
