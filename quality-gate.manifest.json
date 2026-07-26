@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.15.0/schemas/schema.json",
+  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.17.0/schemas/schema.json",
   "services": [
     {
       "product": "Mobile Wallet",
@@ -9,36 +9,28 @@
         {
           "phase": "pre-merge",
           "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/pull-request-checks.yaml",
-            "path": "$.jobs.conventional-commits"
-          },
           "checks": [
             {
               "name": "code style and linting"
             }
-          ]
+          ],
+          "file": ".github/workflows/pull-request-checks.yaml",
+          "path": "$.jobs.conventional-commits"
         },
         {
           "phase": "pre-merge",
           "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/pull-request-checks.yaml",
-            "path": "$.jobs.build-and-component-tests"
-          },
           "checks": [
             {
               "name": "integration"
             }
-          ]
+          ],
+          "file": ".github/workflows/pull-request-checks.yaml",
+          "path": "$.jobs.build-and-component-tests"
         },
         {
           "phase": "pre-merge",
           "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/pull-request-checks.yaml",
-            "path": "$.jobs.run-code-quality-and-security-analysis"
-          },
           "checks": [
             {
               "name": "unit"
@@ -55,15 +47,15 @@
             {
               "name": "secret scanning"
             }
-          ]
+          ],
+          "file": ".github/workflows/pull-request-checks.yaml",
+          "path": "$.jobs.run-code-quality-and-security-analysis"
         },
         {
           "phase": "pre-merge",
           "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/pull-request-checks.yaml",
-            "path": "$.jobs.typecheck-lint-format"
-          },
+          "file": ".github/workflows/pull-request-checks.yaml",
+          "path": "$.jobs.typecheck-lint-format",
           "checks": [
             {"name": "code style and linting"}
           ]
@@ -71,10 +63,8 @@
         {
           "phase": "pre-release",
           "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/push-to-main.yaml",
-            "path": "$.jobs.conventional-commits"
-          },
+          "file": ".github/workflows/push-to-main.yaml",
+          "path": "$.jobs.conventional-commits",
           "checks": [
             {"name": "code style and linting"}
           ]
@@ -82,10 +72,8 @@
         {
           "phase": "pre-release",
           "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/push-to-main.yaml",
-            "path": "$.jobs.build-and-component-tests"
-          },
+          "file": ".github/workflows/push-to-main.yaml",
+          "path": "$.jobs.build-and-component-tests",
           "checks": [{ "name": "integration" }]
         },
         {
@@ -98,10 +86,8 @@
           ],
           "phase": "pre-release",
           "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/push-to-main.yaml",
-            "path": "$.jobs.run-code-quality-and-security-analysis"
-          }
+          "file": ".github/workflows/push-to-main.yaml",
+          "path": "$.jobs.run-code-quality-and-security-analysis"
         },
         {
           "checks": [
@@ -109,10 +95,8 @@
           ],
           "phase": "pre-release",
           "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/push-to-main.yaml",
-            "path": "$.jobs.typecheck-lint-format"
-          }
+          "file": ".github/workflows/push-to-main.yaml",
+          "path": "$.jobs.typecheck-lint-format"
         }
       ]
     }
