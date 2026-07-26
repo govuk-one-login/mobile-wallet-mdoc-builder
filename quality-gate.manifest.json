@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.16.0/schemas/schema.json",
+  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.17.0/schemas/schema.json",
   "services": [
     {
       "product": "Mobile Wallet",
@@ -9,36 +9,28 @@
         {
           "phase": "pre-merge",
           "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/pull-request-checks.yaml",
-            "path": "$.jobs.conventional-commits"
-          },
           "checks": [
             {
               "name": "code style and linting"
             }
-          ]
+          ],
+          "file": ".github/workflows/pull-request-checks.yaml",
+          "path": "$.jobs.conventional-commits"
         },
         {
           "phase": "pre-merge",
           "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/pull-request-checks.yaml",
-            "path": "$.jobs.build-and-component-tests"
-          },
           "checks": [
             {
               "name": "integration"
             }
-          ]
+          ],
+          "file": ".github/workflows/pull-request-checks.yaml",
+          "path": "$.jobs.build-and-component-tests"
         },
         {
           "phase": "pre-merge",
           "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/pull-request-checks.yaml",
-            "path": "$.jobs.run-code-quality-and-security-analysis"
-          },
           "checks": [
             {
               "name": "unit"
@@ -55,7 +47,9 @@
             {
               "name": "secret scanning"
             }
-          ]
+          ],
+          "file": ".github/workflows/pull-request-checks.yaml",
+          "path": "$.jobs.run-code-quality-and-security-analysis"
         }
       ]
     }
