@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildValidityInfo } from "./buildValidityInfo.js";
+import { buildValidityInfo } from "./buildValidityInfo";
 
 describe("buildValidityInfo", () => {
   const now = new Date("2026-07-24T12:00:00Z");
