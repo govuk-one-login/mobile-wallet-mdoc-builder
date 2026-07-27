@@ -1,5 +1,5 @@
 import type { CredentialValidity } from "../types";
-import type { ValidityInfo } from "../types/validityInfo";
+import type { ValidityInfo } from "./validityInfo";
 
 /**
  * Builds a ValidityInfo structure from the provided credential validity input.
