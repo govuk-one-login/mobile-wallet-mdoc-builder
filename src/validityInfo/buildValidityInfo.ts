@@ -8,14 +8,10 @@ import type { ValidityInfo } from "../types/validityInfo";
  * `signed` reflects the actual moment of MSO construction.
  *
  * @param input - The credential validity preferences provided by the caller.
- * @param now - The current time. Defaults to `new Date()`. Accept a fixed value for deterministic testing.
  * @returns A ValidityInfo object as defined by ISO/IEC 18013-5 §9.1.2.4.
  */
-export function buildValidityInfo(
-  input: CredentialValidity,
-  now: Date = new Date(),
-): ValidityInfo {
-  const signed = now;
+export function buildValidityInfo(input: CredentialValidity): ValidityInfo {
+  const signed = new Date();
 
   const validFrom =
     input.earliestValidFrom && input.earliestValidFrom > signed
