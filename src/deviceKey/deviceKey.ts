@@ -1,12 +1,15 @@
 import crypto from "node:crypto";
 import { MdocBuilderError } from "../types/mdocBuilderError.js";
 
+export type CoseKey = Map<number, number | Uint8Array>;
+export type DeviceKeyInfo = Map<string, CoseKey | Map<string, string[]>>;
+
 const P256_COORDINATE_LENGTH = 32;
 
 export function buildDeviceKeyInfo(
   spkiBytes: Uint8Array,
   namespaceNames: string[],
-): Map<string, unknown> {
+): DeviceKeyInfo {
   const keyObject = importSpki(spkiBytes);
   const jwk = keyObject.export({ format: "jwk" });
 
@@ -29,7 +32,7 @@ export function buildDeviceKeyInfo(
   coseKey.set(-2, x);
   coseKey.set(-3, y);
 
-  const deviceKeyInfo = new Map<string, unknown>();
+  const deviceKeyInfo: DeviceKeyInfo = new Map();
   deviceKeyInfo.set("deviceKey", coseKey);
   if (namespaceNames.length > 0) {
     const keyAuthorizations = new Map<string, string[]>();

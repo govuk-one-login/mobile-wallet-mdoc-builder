@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { buildDeviceKeyInfo, padCoordinate } from "./deviceKey.js";
+import type { CoseKey } from "./deviceKey.js";
 import { MdocBuilderError } from "../types/mdocBuilderError.js";
 
 function generateSpki(namedCurve: string): Uint8Array {
@@ -51,7 +52,7 @@ describe("buildDeviceKeyInfo", () => {
     it("contains exactly four entries", () => {
       const spki = generateSpki("P-256");
       const result = buildDeviceKeyInfo(spki, ["org.iso.18013.5.1"]);
-      const coseKey = result.get("deviceKey") as Map<number, unknown>;
+      const coseKey = result.get("deviceKey") as CoseKey;
       const keys = [...coseKey.keys()];
 
       expect(coseKey.size).toBe(4);
@@ -66,7 +67,7 @@ describe("buildDeviceKeyInfo", () => {
       const spki = generateSpki("P-256");
       const expected = getExpectedCoordinates(spki);
       const result = buildDeviceKeyInfo(spki, ["org.iso.18013.5.1"]);
-      const coseKey = result.get("deviceKey") as Map<number, unknown>;
+      const coseKey = result.get("deviceKey") as CoseKey;
       expect(coseKey.get(-2)).toEqual(expected.x);
       expect(coseKey.get(-3)).toEqual(expected.y);
     });
@@ -77,7 +78,7 @@ describe("buildDeviceKeyInfo", () => {
       const spki = generateSpki("P-256");
       const namespaces = ["org.iso.18013.5.1", "org.iso.18013.5.1.GB"];
       const result = buildDeviceKeyInfo(spki, namespaces);
-      const keyAuth = result.get("keyAuthorizations") as Map<string, unknown>;
+      const keyAuth = result.get("keyAuthorizations") as Map<string, string[]>;
       expect(keyAuth.get("nameSpaces")).toEqual(namespaces);
     });
 
