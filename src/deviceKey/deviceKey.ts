@@ -1,4 +1,4 @@
-import crypto from "node:crypto";
+import crypto, { webcrypto } from "node:crypto";
 import { MdocBuilderError } from "../types/mdocBuilderError.js";
 
 export type CoseKey = Map<number, number | Uint8Array>;
@@ -43,18 +43,7 @@ export function buildDeviceKeyInfo(
     );
   }
 
-  const x = padCoordinate(
-    new Uint8Array(Buffer.from(jwk.x as string, "base64url")),
-  );
-  const y = padCoordinate(
-    new Uint8Array(Buffer.from(jwk.y as string, "base64url")),
-  );
-
-  const coseKey = new Map<number, number | Uint8Array>();
-  coseKey.set(COSE_KEY_LABEL.KTY, COSE_KEY_VALUE.KTY_EC2);
-  coseKey.set(COSE_KEY_LABEL.CRV, COSE_KEY_VALUE.CRV_P256);
-  coseKey.set(COSE_KEY_LABEL.X, x);
-  coseKey.set(COSE_KEY_LABEL.Y, y);
+  const coseKey = buildCoseKey(jwk);
 
   const deviceKeyInfo: DeviceKeyInfo = new Map();
   deviceKeyInfo.set(DEVICE_KEY_INFO_KEY.DEVICE_KEY, coseKey);
@@ -67,6 +56,22 @@ export function buildDeviceKeyInfo(
     );
   }
   return deviceKeyInfo;
+}
+
+function buildCoseKey(jwk: webcrypto.JsonWebKey): CoseKey {
+  const x = decodeCoordinate(jwk.x as string);
+  const y = decodeCoordinate(jwk.y as string);
+
+  const coseKey: CoseKey = new Map();
+  coseKey.set(COSE_KEY_LABEL.KTY, COSE_KEY_VALUE.KTY_EC2);
+  coseKey.set(COSE_KEY_LABEL.CRV, COSE_KEY_VALUE.CRV_P256);
+  coseKey.set(COSE_KEY_LABEL.X, x);
+  coseKey.set(COSE_KEY_LABEL.Y, y);
+  return coseKey;
+}
+
+function decodeCoordinate(base64url: string): Uint8Array {
+  return padCoordinate(new Uint8Array(Buffer.from(base64url, "base64url")));
 }
 
 // RFC 9053 §7.1.1 requires coordinates to be big-endian unsigned integers of
