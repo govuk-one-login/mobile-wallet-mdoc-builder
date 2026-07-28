@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { buildDeviceKeyInfo, padCoordinate } from "./deviceKey.js";
+import { buildDeviceKeyInfo } from "./deviceKey.js";
 import type { CoseKey } from "./deviceKey.js";
 import { MdocBuilderError } from "../types/mdocBuilderError.js";
 
@@ -111,30 +111,5 @@ describe("buildDeviceKeyInfo", () => {
       const keys = [...result.keys()];
       expect(keys).toEqual(["deviceKey", "keyAuthorizations"]);
     });
-  });
-});
-
-describe("padCoordinate", () => {
-  it("returns the coordinate unchanged when it is already 32 bytes", () => {
-    const input = new Uint8Array(32).fill(0xab);
-    const result = padCoordinate(input);
-    expect(result).toEqual(input);
-    expect(result).toHaveLength(32);
-  });
-
-  it("left-pads a shorter coordinate with zeros to 32 bytes", () => {
-    const input = new Uint8Array([0x01, 0x02, 0x03]);
-    const result = padCoordinate(input);
-    expect(result).toHaveLength(32);
-    expect(result.slice(0, 29)).toEqual(new Uint8Array(29));
-    expect(result.slice(29)).toEqual(new Uint8Array([0x01, 0x02, 0x03]));
-  });
-
-  it("left-pads a 31-byte coordinate with one zero byte", () => {
-    const input = new Uint8Array(31).fill(0xff);
-    const result = padCoordinate(input);
-    expect(result).toHaveLength(32);
-    expect(result[0]).toBe(0x00);
-    expect(result.slice(1)).toEqual(new Uint8Array(31).fill(0xff));
   });
 });

@@ -1,10 +1,9 @@
 import crypto, { webcrypto } from "node:crypto";
 import { MdocBuilderError } from "../types/mdocBuilderError.js";
+import { decodeAndPadCoordinate } from "./helpers/padCoordinate.js";
 
 export type CoseKey = Map<number, number | Uint8Array>;
 export type DeviceKeyInfo = Map<string, CoseKey | Map<string, string[]>>;
-
-const P256_COORDINATE_LENGTH = 32;
 
 const COSE_KEY_LABEL = {
   /** Key Type (kty) */
@@ -65,8 +64,8 @@ export function buildDeviceKeyInfo(
 }
 
 function buildCoseKey(jwk: webcrypto.JsonWebKey): CoseKey {
-  const x = decodeCoordinate(jwk.x as string);
-  const y = decodeCoordinate(jwk.y as string);
+  const x = decodeAndPadCoordinate(jwk.x as string);
+  const y = decodeAndPadCoordinate(jwk.y as string);
 
   const coseKey: CoseKey = new Map();
   coseKey.set(COSE_KEY_LABEL.KTY, COSE_KEY_VALUE.KTY_EC2);
@@ -74,22 +73,6 @@ function buildCoseKey(jwk: webcrypto.JsonWebKey): CoseKey {
   coseKey.set(COSE_KEY_LABEL.X, x);
   coseKey.set(COSE_KEY_LABEL.Y, y);
   return coseKey;
-}
-
-function decodeCoordinate(base64url: string): Uint8Array {
-  return padCoordinate(new Uint8Array(Buffer.from(base64url, "base64url")));
-}
-
-// RFC 9053 §7.1.1 requires coordinates to be big-endian unsigned integers of
-// exactly the field size (32 bytes for P-256). If a decoded coordinate is
-// shorter, it must be left-padded with zeros to preserve leading-zero octets.
-export function padCoordinate(coordinate: Uint8Array): Uint8Array {
-  if (coordinate.length === P256_COORDINATE_LENGTH) {
-    return new Uint8Array(coordinate);
-  }
-  const padded = new Uint8Array(P256_COORDINATE_LENGTH);
-  padded.set(coordinate, P256_COORDINATE_LENGTH - coordinate.length);
-  return padded;
 }
 
 function importSpki(spkiBytes: Uint8Array): crypto.KeyObject {
