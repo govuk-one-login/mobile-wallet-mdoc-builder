@@ -6,6 +6,30 @@ export type DeviceKeyInfo = Map<string, CoseKey | Map<string, string[]>>;
 
 const P256_COORDINATE_LENGTH = 32;
 
+const COSE_KEY_LABEL = {
+  /** Key Type (kty) */
+  KTY: 1,
+  /** EC Curve (crv) */
+  CRV: -1,
+  /** x-coordinate */
+  X: -2,
+  /** y-coordinate */
+  Y: -3,
+} as const;
+
+const COSE_KEY_VALUE = {
+  /** Key type: Elliptic Curve (EC2) */
+  KTY_EC2: 2,
+  /** Curve: P-256 */
+  CRV_P256: 1,
+} as const;
+
+const DEVICE_KEY_INFO_KEY = {
+  DEVICE_KEY: "deviceKey",
+  KEY_AUTHORIZATIONS: "keyAuthorizations",
+  NAME_SPACES: "nameSpaces",
+} as const;
+
 export function buildDeviceKeyInfo(
   spkiBytes: Uint8Array,
   namespaceNames: string[],
@@ -27,17 +51,20 @@ export function buildDeviceKeyInfo(
   );
 
   const coseKey = new Map<number, number | Uint8Array>();
-  coseKey.set(1, 2);
-  coseKey.set(-1, 1);
-  coseKey.set(-2, x);
-  coseKey.set(-3, y);
+  coseKey.set(COSE_KEY_LABEL.KTY, COSE_KEY_VALUE.KTY_EC2);
+  coseKey.set(COSE_KEY_LABEL.CRV, COSE_KEY_VALUE.CRV_P256);
+  coseKey.set(COSE_KEY_LABEL.X, x);
+  coseKey.set(COSE_KEY_LABEL.Y, y);
 
   const deviceKeyInfo: DeviceKeyInfo = new Map();
-  deviceKeyInfo.set("deviceKey", coseKey);
+  deviceKeyInfo.set(DEVICE_KEY_INFO_KEY.DEVICE_KEY, coseKey);
   if (namespaceNames.length > 0) {
     const keyAuthorizations = new Map<string, string[]>();
-    keyAuthorizations.set("nameSpaces", namespaceNames);
-    deviceKeyInfo.set("keyAuthorizations", keyAuthorizations);
+    keyAuthorizations.set(DEVICE_KEY_INFO_KEY.NAME_SPACES, namespaceNames);
+    deviceKeyInfo.set(
+      DEVICE_KEY_INFO_KEY.KEY_AUTHORIZATIONS,
+      keyAuthorizations,
+    );
   }
   return deviceKeyInfo;
 }
