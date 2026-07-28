@@ -84,6 +84,11 @@ the patch version, `feat:` commits bump the minor version, and breaking changes 
 3. **Manual trigger only** — the release workflow must be triggered by a human via the GitHub Actions UI. Automation
    (e.g. triggering on merge to `main`) will come in the future.
 
+## Documentation
+
+- [Component architecture](docs/component-architecture.md)
+- [CBOR test guide](docs/cbor-test-guide.md)
+
 ## Licence
 
 [MIT License](LICENSE)
