@@ -90,6 +90,8 @@ function importSpki(spkiBytes: Uint8Array): crypto.KeyObject {
     });
   } catch (error: unknown) {
     const message = (error as Error).message;
-    throw new MdocBuilderError(`Failed to import SPKI key: ${message}`);
+    throw new MdocBuilderError(`Failed to import SPKI key: ${message}`, {
+      cause: error,
+    });
   }
 }
