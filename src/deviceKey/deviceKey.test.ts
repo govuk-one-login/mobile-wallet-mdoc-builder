@@ -46,6 +46,21 @@ describe("buildDeviceKeyInfo", () => {
         /only P-256/i,
       );
     });
+
+    it("throws MdocBuilderError for a non-EC key type", () => {
+      const { publicKey } = crypto.generateKeyPairSync("rsa", {
+        modulusLength: 2048,
+      });
+      const spki = new Uint8Array(
+        publicKey.export({ format: "der", type: "spki" }),
+      );
+      expect(() => buildDeviceKeyInfo(spki, ["org.iso.18013.5.1"])).toThrow(
+        MdocBuilderError,
+      );
+      expect(() => buildDeviceKeyInfo(spki, ["org.iso.18013.5.1"])).toThrow(
+        /unsupported key type/i,
+      );
+    });
   });
 
   describe("COSE_Key construction", () => {

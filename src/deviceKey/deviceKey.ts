@@ -37,9 +37,15 @@ export function buildDeviceKeyInfo(
   const keyObject = importSpki(spkiBytes);
   const jwk = keyObject.export({ format: "jwk" });
 
+  if (jwk.kty !== "EC") {
+    throw new MdocBuilderError(
+      `Unsupported key type: ${String(jwk.kty)}. Only EC keys are supported.`,
+    );
+  }
+
   if (jwk.crv !== "P-256") {
     throw new MdocBuilderError(
-      `Unsupported curve: ${String(jwk.crv)}. Only P-256 ECDSA keys are supported.`,
+      `Unsupported curve: ${String(jwk.crv)}. Only P-256 is supported.`,
     );
   }
 
