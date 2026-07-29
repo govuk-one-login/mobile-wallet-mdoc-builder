@@ -1,5 +1,11 @@
 import type { CredentialValidity } from "../types";
-import type { ValidityInfo } from "./validityInfo.js";
+
+export interface ValidityInfo {
+  signed: Date;
+  validFrom: Date;
+  validUntil: Date;
+  expectedUpdate?: Date;
+}
 
 export function buildValidityInfo(input: CredentialValidity): ValidityInfo {
   const signed = new Date();
