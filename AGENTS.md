@@ -34,6 +34,7 @@ changed.
 
 - **TDD is mandatory.** Tests are written before implementation, in small phases, each independently
   testable and committed separately.
+- **Linting and formating.** Code that is implemented should comply with the project ESLint and Prettier checks.
 - **Conventional Commits** are enforced by a pre-commit `commit-msg` hook — non-conforming messages are
   rejected. Don't bypass with `--no-verify`.
 - Pre-commit runs eslint, prettier, and typecheck on `pre-commit`, and the full test suite on
