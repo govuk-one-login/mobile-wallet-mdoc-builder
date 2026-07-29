@@ -9,12 +9,15 @@ export function buildValidityInfo(input: CredentialValidity): ValidityInfo {
       ? input.earliestValidFrom
       : signed;
 
-  return {
+  const validityInfo: ValidityInfo = {
     signed,
     validFrom,
     validUntil: input.validUntil,
-    ...(input.expectedUpdate !== undefined && {
-      expectedUpdate: input.expectedUpdate,
-    }),
   };
+
+  if (input.expectedUpdate !== undefined) {
+    validityInfo.expectedUpdate = input.expectedUpdate;
+  }
+
+  return validityInfo;
 }
