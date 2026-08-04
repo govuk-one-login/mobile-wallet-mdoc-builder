@@ -14,6 +14,6 @@ export interface DataElement {
   /** The element value. */
   elementValue: DataElementValue;
 
-  /** Optional format for Date value. */
+  /** Optional format for Date values. Defaults to DateTime (Tag 0, tdate) when not specified. */
   dateFormat?: DateFormat;
 }

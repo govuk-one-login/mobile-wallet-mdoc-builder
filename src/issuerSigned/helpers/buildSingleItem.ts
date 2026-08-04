@@ -17,7 +17,7 @@ export interface EncodedItem {
   tag24Bytes: Uint8Array;
 }
 
-export function generateDigestId(existingIds: Set<number>): number {
+function generateDigestId(existingIds: Set<number>): number {
   let id: number;
   do {
     const bytes = randomBytes(4);
