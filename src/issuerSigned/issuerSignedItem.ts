@@ -2,8 +2,6 @@ import type { NameSpaces } from "../types";
 import { buildSingleItem } from "./helpers/buildSingleItem.js";
 import { digestItem } from "./helpers/digest.js";
 
-export type { EncodedItem } from "./helpers/buildSingleItem.js";
-
 export interface IssuerSignedItemResult {
   issuerSignedItemBytes: Map<string, Uint8Array[]>;
   valueDigests: Map<string, Map<number, Uint8Array>>;
