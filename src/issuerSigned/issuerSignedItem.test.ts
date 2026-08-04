@@ -102,7 +102,7 @@ describe("buildIssuerSignedItems", () => {
     expect(digests?.size).toBe(0);
   });
 
-  it("each namespace gets an independent ID space", async () => {
+  it("each namespace produces its own digest entries", async () => {
     const nameSpaces = makeNameSpaces([
       ["ns1", [{ elementIdentifier: "a", elementValue: "1" }]],
       ["ns2", [{ elementIdentifier: "b", elementValue: "2" }]],

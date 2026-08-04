@@ -10,7 +10,6 @@ import type { DataElement, PrimitiveElementValue } from "../../types";
 import { DateFormat } from "../../types";
 
 const SALT_LENGTH_BYTES = 16;
-const MAX_DIGEST_ID = 2_147_483_647; // 2^31 - 1
 
 export interface EncodedItem {
   digestId: number;
@@ -22,7 +21,7 @@ function generateDigestId(existingIds: Set<number>): number {
   do {
     const bytes = randomBytes(4);
     id = bytes.readUInt32BE(0) >>> 1;
-  } while (id > MAX_DIGEST_ID || existingIds.has(id));
+  } while (existingIds.has(id));
   return id;
 }
 

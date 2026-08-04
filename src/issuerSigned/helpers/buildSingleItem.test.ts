@@ -63,7 +63,7 @@ describe("buildSingleItem", () => {
       expect(result.tag24Bytes).toBeInstanceOf(Uint8Array);
     });
 
-    it("encodes the IssuerSignedItem map with correct field order", () => {
+    it("encodes the IssuerSignedItem map with correct fields and order", () => {
       const element: DataElement = {
         elementIdentifier: "given_name",
         elementValue: "Alice",
