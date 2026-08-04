@@ -6,7 +6,7 @@ import {
   fullDate,
   TaggedValue,
 } from "../../cbor/index.js";
-import type { DataElement } from "../../types";
+import type { DataElement, PrimitiveElementValue } from "../../types";
 import { DateFormat } from "../../types";
 
 const SALT_LENGTH_BYTES = 16;
@@ -33,16 +33,37 @@ function encodeElementValue(element: DataElement): unknown {
     return encodeDateValue(elementValue, dateFormat);
   }
 
+  if (elementValue instanceof Map) {
+    return encodeDateMap(elementValue, dateFormat);
+  }
+
   if (Array.isArray(elementValue)) {
     return elementValue.map((item) => {
       if (item instanceof Date) {
         return encodeDateValue(item, dateFormat);
+      }
+      if (item instanceof Map) {
+        return encodeDateMap(item, dateFormat);
       }
       return item;
     });
   }
 
   return elementValue;
+}
+
+function encodeDateMap(
+  map: Map<string, PrimitiveElementValue>,
+  dateFormat?: DateFormat,
+): Map<string, unknown> {
+  const result = new Map<string, unknown>();
+  for (const [key, value] of map) {
+    result.set(
+      key,
+      value instanceof Date ? encodeDateValue(value, dateFormat) : value,
+    );
+  }
+  return result;
 }
 
 function encodeDateValue(date: Date, dateFormat?: DateFormat): TaggedValue {
