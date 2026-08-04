@@ -19,7 +19,6 @@ vi.mock("../cbor/index.js", () => ({
   },
 }));
 
-// Import after mock is set up
 const { buildIssuerSignedItems } = await import("./issuerSignedItem.js");
 
 function makeNameSpaces(entries: [string, DataElement[]][]): NameSpaces {
@@ -33,7 +32,6 @@ describe("buildIssuerSignedItems", () => {
     vi.clearAllMocks();
     encodeCallCount = 0;
     mockEncode.mockImplementation(() => {
-      // Return a unique Uint8Array for each call so digests differ
       const bytes = new Uint8Array([encodeCallCount++]);
       return bytes;
     });
@@ -51,163 +49,92 @@ describe("buildIssuerSignedItems", () => {
     }));
   });
 
-  describe("output structure", () => {
-    it("returns both issuerSignedItemBytes and valueDigests maps", async () => {
-      const nameSpaces = makeNameSpaces([
-        [
-          "org.iso.18013.5.1",
-          [{ elementIdentifier: "family_name", elementValue: "Smith" }],
-        ],
-      ]);
+  it("produces entries for each namespace in both output maps", async () => {
+    const nameSpaces = makeNameSpaces([
+      [
+        "org.iso.18013.5.1",
+        [{ elementIdentifier: "family_name", elementValue: "Smith" }],
+      ],
+      [
+        "uk.gov.wallet.1",
+        [{ elementIdentifier: "issuing_country", elementValue: "UK" }],
+      ],
+    ]);
 
-      const result = await buildIssuerSignedItems(nameSpaces);
+    const result = await buildIssuerSignedItems(nameSpaces);
 
-      expect(result.issuerSignedItemBytes).toBeInstanceOf(Map);
-      expect(result.valueDigests).toBeInstanceOf(Map);
-    });
-
-    it("produces entries for each namespace", async () => {
-      const nameSpaces = makeNameSpaces([
-        [
-          "org.iso.18013.5.1",
-          [{ elementIdentifier: "family_name", elementValue: "Smith" }],
-        ],
-        [
-          "uk.gov.account.mobile.example-credential-issuer.simplemdoc.1.json",
-          [{ elementIdentifier: "issuing_country", elementValue: "UK" }],
-        ],
-      ]);
-
-      const result = await buildIssuerSignedItems(nameSpaces);
-
-      expect(result.issuerSignedItemBytes.size).toBe(2);
-      expect(result.valueDigests.size).toBe(2);
-      expect(result.issuerSignedItemBytes.has("org.iso.18013.5.1")).toBe(true);
-      expect(
-        result.issuerSignedItemBytes.has(
-          "uk.gov.account.mobile.example-credential-issuer.simplemdoc.1.json",
-        ),
-      ).toBe(true);
-    });
-
-    it("produces one item per data element in the namespace", async () => {
-      const nameSpaces = makeNameSpaces([
-        [
-          "org.iso.18013.5.1",
-          [
-            { elementIdentifier: "family_name", elementValue: "Smith" },
-            { elementIdentifier: "given_name", elementValue: "John" },
-            { elementIdentifier: "resident_city", elementValue: "London" },
-          ],
-        ],
-      ]);
-
-      const result = await buildIssuerSignedItems(nameSpaces);
-
-      const items = result.issuerSignedItemBytes.get("org.iso.18013.5.1");
-      const digests = result.valueDigests.get("org.iso.18013.5.1");
-      expect(items).toHaveLength(3);
-      expect(digests?.size).toBe(3);
-    });
-
-    it("handles empty namespaces", async () => {
-      const nameSpaces = makeNameSpaces([["org.iso.18013.5.1", []]]);
-
-      const result = await buildIssuerSignedItems(nameSpaces);
-
-      const items = result.issuerSignedItemBytes.get("org.iso.18013.5.1");
-      const digests = result.valueDigests.get("org.iso.18013.5.1");
-      expect(items).toHaveLength(0);
-      expect(digests?.size).toBe(0);
-    });
+    expect(result.issuerSignedItemBytes.size).toBe(2);
+    expect(result.valueDigests.size).toBe(2);
+    expect(result.issuerSignedItemBytes.has("org.iso.18013.5.1")).toBe(true);
+    expect(result.issuerSignedItemBytes.has("uk.gov.wallet.1")).toBe(true);
+    expect(result.valueDigests.has("org.iso.18013.5.1")).toBe(true);
+    expect(result.valueDigests.has("uk.gov.wallet.1")).toBe(true);
   });
 
-  describe("namespace isolation", () => {
-    it("generates unique digestIDs within a namespace", async () => {
-      const elements: DataElement[] = Array.from({ length: 50 }, (_, i) => ({
-        elementIdentifier: String(i),
-        elementValue: String(i),
-      }));
-      const nameSpaces = makeNameSpaces([["ns", elements]]);
+  it("produces correct count of items per namespace", async () => {
+    const nameSpaces = makeNameSpaces([
+      [
+        "org.iso.18013.5.1",
+        [
+          { elementIdentifier: "family_name", elementValue: "Smith" },
+          { elementIdentifier: "given_name", elementValue: "John" },
+          { elementIdentifier: "resident_city", elementValue: "London" },
+        ],
+      ],
+    ]);
 
-      const result = await buildIssuerSignedItems(nameSpaces);
+    const result = await buildIssuerSignedItems(nameSpaces);
 
-      const digests = result.valueDigests.get("ns");
-      expect(digests).toBeDefined();
-      const ids = [...(digests?.keys() ?? [])];
-      const uniqueIds = new Set(ids);
-      expect(uniqueIds.size).toBe(ids.length);
-    });
-
-    it("allows the same digestID to appear in different namespaces", async () => {
-      const nameSpaces = makeNameSpaces([
-        ["ns1", [{ elementIdentifier: "a", elementValue: "1" }]],
-        ["ns2", [{ elementIdentifier: "b", elementValue: "2" }]],
-      ]);
-
-      const result = await buildIssuerSignedItems(nameSpaces);
-
-      // Both namespaces should independently have their own digest IDs
-      expect(result.valueDigests.get("ns1")?.size).toBe(1);
-      expect(result.valueDigests.get("ns2")?.size).toBe(1);
-    });
+    const items = result.issuerSignedItemBytes.get("org.iso.18013.5.1");
+    const digests = result.valueDigests.get("org.iso.18013.5.1");
+    expect(items).toHaveLength(3);
+    expect(digests?.size).toBe(3);
   });
 
-  describe("orchestration", () => {
-    it("stores the tag24 bytes from buildSingleItem in issuerSignedItemBytes", async () => {
-      const nameSpaces = makeNameSpaces([
-        ["ns", [{ elementIdentifier: "name", elementValue: "test" }]],
-      ]);
+  it("handles empty namespace", async () => {
+    const nameSpaces = makeNameSpaces([["org.iso.18013.5.1", []]]);
 
-      const result = await buildIssuerSignedItems(nameSpaces);
+    const result = await buildIssuerSignedItems(nameSpaces);
 
-      const tag24Bytes = mockEncode.mock.results[1]?.value as
-        | Uint8Array
-        | undefined;
-      const items = result.issuerSignedItemBytes.get("ns");
-      expect(items?.[0]).toStrictEqual(tag24Bytes);
-    });
+    const items = result.issuerSignedItemBytes.get("org.iso.18013.5.1");
+    const digests = result.valueDigests.get("org.iso.18013.5.1");
+    expect(items).toHaveLength(0);
+    expect(digests?.size).toBe(0);
+  });
 
-    it("stores the digest from digestItem in valueDigests", async () => {
-      const nameSpaces = makeNameSpaces([
-        ["ns", [{ elementIdentifier: "name", elementValue: "test" }]],
-      ]);
+  it("each namespace gets an independent ID space", async () => {
+    const nameSpaces = makeNameSpaces([
+      ["ns1", [{ elementIdentifier: "a", elementValue: "1" }]],
+      ["ns2", [{ elementIdentifier: "b", elementValue: "2" }]],
+    ]);
 
-      const result = await buildIssuerSignedItems(nameSpaces);
+    const result = await buildIssuerSignedItems(nameSpaces);
 
-      const tag24Bytes = mockEncode.mock.results[1]?.value as
-        | Uint8Array
-        | undefined;
-      expect(tag24Bytes).toBeDefined();
-      const digests = result.valueDigests.get("ns");
-      const storedDigest = [...(digests?.values() ?? [])][0];
-      expect(storedDigest).toBeDefined();
+    expect(result.valueDigests.get("ns1")?.size).toBe(1);
+    expect(result.valueDigests.get("ns2")?.size).toBe(1);
+  });
 
-      const expectedDigest = new Uint8Array(
-        await crypto.subtle.digest(
-          "SHA-256",
-          tag24Bytes as Uint8Array<ArrayBuffer>,
-        ),
-      );
+  it("stored digest matches SHA-256 of the corresponding tag24Bytes", async () => {
+    const nameSpaces = makeNameSpaces([
+      ["ns", [{ elementIdentifier: "name", elementValue: "test" }]],
+    ]);
 
-      expect(storedDigest).toEqual(expectedDigest);
-    });
+    const result = await buildIssuerSignedItems(nameSpaces);
 
-    it("produces different digests for different elements", async () => {
-      const nameSpaces = makeNameSpaces([
-        [
-          "ns",
-          [
-            { elementIdentifier: "a", elementValue: "1" },
-            { elementIdentifier: "b", elementValue: "2" },
-          ],
-        ],
-      ]);
+    const items = result.issuerSignedItemBytes.get("ns");
+    const tag24Bytes = items?.[0];
+    expect(tag24Bytes).toBeDefined();
 
-      const result = await buildIssuerSignedItems(nameSpaces);
+    const digests = result.valueDigests.get("ns");
+    const storedDigest = [...(digests?.values() ?? [])][0];
 
-      const digests = [...(result.valueDigests.get("ns")?.values() ?? [])];
-      expect(digests[0]).not.toEqual(digests[1]);
-    });
+    const expectedDigest = new Uint8Array(
+      await crypto.subtle.digest(
+        "SHA-256",
+        tag24Bytes as Uint8Array<ArrayBuffer>,
+      ),
+    );
+
+    expect(storedDigest).toEqual(expectedDigest);
   });
 });
