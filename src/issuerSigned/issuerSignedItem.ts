@@ -8,6 +8,7 @@ import {
 } from "../cbor/index.js";
 import type { DataElement, NameSpaces } from "../types";
 import { DateFormat } from "../types";
+import { digestItem } from "./helpers/digest.js";
 
 export interface IssuerSignedItemResult {
   issuerSignedItemBytes: Map<string, Uint8Array[]>;
@@ -81,14 +82,6 @@ export function buildSingleItem(
   const tag24Bytes = encode(embeddedCbor(innerBytes));
 
   return { digestId, tag24Bytes };
-}
-
-export async function digestItem(tag24Bytes: Uint8Array): Promise<Uint8Array> {
-  const buffer = await crypto.subtle.digest(
-    "SHA-256",
-    tag24Bytes as Uint8Array<ArrayBuffer>,
-  );
-  return new Uint8Array(buffer);
 }
 
 export async function buildIssuerSignedItems(
