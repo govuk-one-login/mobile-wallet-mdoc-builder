@@ -1,12 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  tdate,
-  fullDate,
-  embeddedCbor,
-  encode,
-  decode,
-  TaggedValue,
-} from "./cbor.js";
+import { tdate, fullDate, embeddedCbor, encode, TaggedValue } from "./cbor.js";
 
 describe("TaggedValue", () => {
   it("is constructed with a tag number and contents", () => {
@@ -454,153 +447,13 @@ describe("encode", () => {
   });
 });
 
-describe("decode", () => {
-  it("decodes a CBOR-encoded string", () => {
-    const encoded = encode("hello");
-    const result = decode(encoded);
-    expect(result).toBe("hello");
-  });
-
-  it("decodes a CBOR-encoded integer", () => {
-    const encoded = encode(42);
-    const result = decode(encoded);
-    expect(result).toBe(42);
-  });
-
-  it("decodes a CBOR-encoded boolean", () => {
-    const encoded = encode(true);
-    const result = decode(encoded);
-    expect(result).toBe(true);
-  });
-
-  it("decodes a CBOR-encoded null", () => {
-    const encoded = encode(null);
-    const result = decode(encoded);
-    expect(result).toBeNull();
-  });
-
-  it("decodes a CBOR-encoded byte string as Uint8Array", () => {
-    const bytes = new Uint8Array([0xde, 0xad, 0xbe, 0xef]);
-    const encoded = encode(bytes);
-    const result = decode(encoded) as Uint8Array;
-    expect(new Uint8Array(result)).toEqual(bytes);
-  });
-
-  it("decodes a CBOR-encoded Map preserving key order", () => {
-    const map = new Map<string, number>([
-      ["b", 2],
-      ["a", 1],
-    ]);
-    const encoded = encode(map);
-    const result = decode(encoded) as Map<string, number>;
-    expect(result).toBeInstanceOf(Map);
-    expect([...result.keys()]).toEqual(["b", "a"]);
-    expect(result.get("b")).toBe(2);
-    expect(result.get("a")).toBe(1);
-  });
-
-  it("decodes a CBOR-encoded array", () => {
-    const encoded = encode([1, 2, 3]);
-    const result = decode(encoded);
-    expect(result).toEqual([1, 2, 3]);
-  });
-
-  it("converts Tag 0 (tdate) to TaggedValue", () => {
-    const tagged = tdate(new Date("2024-01-15T12:00:00Z"));
-    const encoded = encode(tagged);
-    const result = decode(encoded) as TaggedValue;
-    expect(result).toBeInstanceOf(TaggedValue);
-    expect(result.tagNumber).toBe(0);
-    expect(result.contents).toBe("2024-01-15T12:00:00Z");
-  });
-
-  it("converts Tag 1004 (fullDate) to TaggedValue", () => {
-    const tagged = fullDate("2024-07-24");
-    const encoded = encode(tagged);
-    const result = decode(encoded) as TaggedValue;
-    expect(result).toBeInstanceOf(TaggedValue);
-    expect(result.tagNumber).toBe(1004);
-    expect(result.contents).toBe("2024-07-24");
-  });
-
-  it("converts Tag 24 (embeddedCbor) to TaggedValue with Uint8Array contents", () => {
-    const inner = new Uint8Array([0xa1, 0x01, 0x02]);
-    const tagged = embeddedCbor(inner);
-    const encoded = encode(tagged);
-    const result = decode(encoded) as TaggedValue;
-    expect(result).toBeInstanceOf(TaggedValue);
-    expect(result.tagNumber).toBe(24);
-    expect(new Uint8Array(result.contents as Uint8Array)).toEqual(inner);
-  });
-
-  it("converts nested Tags within a Map to TaggedValue", () => {
-    const map = new Map<string, unknown>([
-      ["signed", tdate(new Date("2024-01-15T12:00:00Z"))],
-      ["birth_date", fullDate("1990-05-20")],
-    ]);
-    const encoded = encode(map);
-    const result = decode(encoded) as Map<string, unknown>;
-    expect(result).toBeInstanceOf(Map);
-
-    const signed = result.get("signed") as TaggedValue;
-    expect(signed).toBeInstanceOf(TaggedValue);
-    expect(signed.tagNumber).toBe(0);
-    expect(signed.contents).toBe("2024-01-15T12:00:00Z");
-
-    const birthDate = result.get("birth_date") as TaggedValue;
-    expect(birthDate).toBeInstanceOf(TaggedValue);
-    expect(birthDate.tagNumber).toBe(1004);
-    expect(birthDate.contents).toBe("1990-05-20");
-  });
-
-  it("converts Tags within an array to TaggedValue", () => {
-    const arr = [
-      tdate(new Date("2024-01-15T12:00:00Z")),
-      fullDate("2024-06-30"),
-    ];
-    const encoded = encode(arr);
-    const result = decode(encoded) as TaggedValue[];
-    expect(result).toHaveLength(2);
-    expect(result[0]).toBeInstanceOf(TaggedValue);
-    expect((result[0] as TaggedValue).tagNumber).toBe(0);
-    expect(result[1]).toBeInstanceOf(TaggedValue);
-    expect((result[1] as TaggedValue).tagNumber).toBe(1004);
-  });
-
-  it("roundtrips encode → decode for a complex structure", () => {
-    const map = new Map<string, unknown>([
-      ["name", "Alice"],
-      ["age", 30],
-      ["birth_date", fullDate("1994-03-12")],
-      ["categories", ["A", "B"]],
-    ]);
-    const encoded = encode(map);
-    const result = decode(encoded) as Map<string, unknown>;
-
-    expect(result.get("name")).toBe("Alice");
-    expect(result.get("age")).toBe(30);
-    const bd = result.get("birth_date") as TaggedValue;
-    expect(bd).toBeInstanceOf(TaggedValue);
-    expect(bd.tagNumber).toBe(1004);
-    expect(bd.contents).toBe("1994-03-12");
-    expect(result.get("categories")).toEqual(["A", "B"]);
-  });
-});
-
 describe("module boundary", () => {
   it("exports only the public API from the barrel", async () => {
     const cborModule = await import("./index.js");
     const exportedKeys = Object.keys(cborModule).sort();
 
     expect(exportedKeys).toEqual(
-      [
-        "TaggedValue",
-        "decode",
-        "embeddedCbor",
-        "encode",
-        "fullDate",
-        "tdate",
-      ].sort(),
+      ["TaggedValue", "embeddedCbor", "encode", "fullDate", "tdate"].sort(),
     );
   });
 
