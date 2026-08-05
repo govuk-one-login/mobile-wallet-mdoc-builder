@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { DataElement } from "../../types";
-import { DateFormat } from "../../types";
+import type { DataElement } from "../types";
+import { DateFormat } from "../types";
 
 const mockEncode = vi.fn<(value: unknown) => Uint8Array>();
 const mockEmbeddedCbor = vi.fn<(bytes: Uint8Array) => unknown>();
@@ -20,7 +20,7 @@ vi.mock("../../cbor/index.js", () => ({
   },
 }));
 
-const { buildSingleItem } = await import("./buildSingleItem.js");
+const { buildSingleItem } = await import("./buildSingleItem");
 
 function getEncodedMap(): Map<string, unknown> {
   return mockEncode.mock.calls[0]?.[0] as Map<string, unknown>;

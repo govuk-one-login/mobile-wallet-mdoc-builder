@@ -1,5 +1,5 @@
 import type { NameSpaces } from "../types";
-import { buildSingleItem } from "./helpers/buildSingleItem.js";
+import { buildSingleItem } from "./buildSingleItem";
 import { digestItem } from "./helpers/digest.js";
 
 export interface IssuerSignedItemResult {

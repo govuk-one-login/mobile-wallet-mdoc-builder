@@ -1,13 +1,7 @@
 import { randomBytes } from "node:crypto";
-import {
-  encode,
-  embeddedCbor,
-  tdate,
-  fullDate,
-  TaggedValue,
-} from "../../cbor/index.js";
-import type { DataElement, PrimitiveElementValue } from "../../types";
-import { DateFormat } from "../../types";
+import { encode, embeddedCbor, tdate, fullDate, TaggedValue } from "../cbor";
+import type { DataElement, PrimitiveElementValue } from "../types";
+import { DateFormat } from "../types";
 
 const SALT_LENGTH_BYTES = 16;
 
