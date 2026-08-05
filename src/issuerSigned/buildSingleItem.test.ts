@@ -7,7 +7,7 @@ const mockEmbeddedCbor = vi.fn<(bytes: Uint8Array) => unknown>();
 const mockTdate = vi.fn<(date: Date) => unknown>();
 const mockFullDate = vi.fn<(date: string) => unknown>();
 
-vi.mock("../../cbor/index.js", () => ({
+vi.mock("../cbor/index.js", () => ({
   encode: (value: unknown) => mockEncode(value),
   embeddedCbor: (bytes: Uint8Array) => mockEmbeddedCbor(bytes),
   tdate: (date: Date) => mockTdate(date),
