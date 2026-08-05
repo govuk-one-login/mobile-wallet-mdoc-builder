@@ -1,0 +1,93 @@
+import { randomBytes } from "node:crypto";
+import { encode, embeddedCbor, tdate, fullDate, TaggedValue } from "../cbor";
+import type { DataElement, PrimitiveElementValue } from "../types";
+import { DateFormat } from "../types";
+
+const SALT_LENGTH_BYTES = 16;
+
+export interface EncodedItem {
+  digestId: number;
+  tag24Bytes: Uint8Array;
+}
+
+function generateDigestId(existingIds: Set<number>): number {
+  let id: number;
+  do {
+    const bytes = randomBytes(4);
+    id = bytes.readUInt32BE(0) >>> 1;
+  } while (existingIds.has(id));
+  return id;
+}
+
+function encodeElementValue(element: DataElement): unknown {
+  const { elementValue, dateFormat } = element;
+
+  if (elementValue instanceof Date) {
+    return encodeDateValue(elementValue, dateFormat);
+  }
+
+  if (elementValue instanceof Map) {
+    return encodeDateMap(elementValue, dateFormat);
+  }
+
+  if (Array.isArray(elementValue)) {
+    return elementValue.map((item) => {
+      if (item instanceof Date) {
+        return encodeDateValue(item, dateFormat);
+      }
+      if (item instanceof Map) {
+        return encodeDateMap(item, dateFormat);
+      }
+      return item;
+    });
+  }
+
+  return elementValue;
+}
+
+function encodeDateMap(
+  map: Map<string, PrimitiveElementValue>,
+  dateFormat?: DateFormat,
+): Map<string, unknown> {
+  const result = new Map<string, unknown>();
+  for (const [key, value] of map) {
+    result.set(
+      key,
+      value instanceof Date ? encodeDateValue(value, dateFormat) : value,
+    );
+  }
+  return result;
+}
+
+function encodeDateValue(date: Date, dateFormat?: DateFormat): TaggedValue {
+  if (dateFormat === DateFormat.FullDate) {
+    const year = date.getUTCFullYear().toString().padStart(4, "0");
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+    const day = date.getUTCDate().toString().padStart(2, "0");
+    return fullDate(`${year}-${month}-${day}`);
+  }
+
+  return tdate(date);
+}
+
+export function buildSingleItem(
+  element: DataElement,
+  usedIds: Set<number>,
+): EncodedItem {
+  const digestId = generateDigestId(usedIds);
+  usedIds.add(digestId);
+
+  const salt = new Uint8Array(randomBytes(SALT_LENGTH_BYTES));
+
+  const issuerSignedItem = new Map<string, unknown>([
+    ["digestID", digestId],
+    ["random", salt],
+    ["elementIdentifier", element.elementIdentifier],
+    ["elementValue", encodeElementValue(element)],
+  ]);
+
+  const innerBytes = encode(issuerSignedItem);
+  const tag24Bytes = encode(embeddedCbor(innerBytes));
+
+  return { digestId, tag24Bytes };
+}

@@ -48,15 +48,36 @@ Every module follows the `src/cbor/` pattern:
 
 ```
 src/<module>/
-├── index.ts              # barrel export — public API of the module
-├── <file>.ts             # implementation file(s)
-└── <file>.test.ts        # co-located unit test, named to match source file
+├── index.ts                       # barrel export — public API of the module
+├── <file>.ts                      # implementation file(s)
+├── <file>.test.ts                 # co-located unit test, named to match source file
+├── <file>.encoding.test.ts        # co-located cbor encoding test, use the real cbor module
+└── helpers/                       # follow the same structure of code and unit tests
+    ├── <file>.ts
+    └── <file>.test.ts
 ```
 
 - Each module has a barrel `index.ts` that defines its public API.
 - Unit tests are co-located with source: `foo.ts` → `foo.test.ts`.
 - `tests/` is for public interface, integration, and component tests — not unit tests.
 - Test files follow the source file name, not the module name.
+
+### Testing strategy for CBOR-producing modules
+
+Modules that encode CBOR output (IssuerSignedItem, MSO, Sig_Structure, IssuerSigned assembly) use a
+two-layer testing approach:
+
+1. **Unit tests (`<file>.test.ts`)** — mock the `src/cbor/` barrel to test logic and delegation in
+   isolation. Verify correct arguments are passed to `encode`, `tdate`, `fullDate`, `embeddedCbor` without
+   depending on the encoder's byte output. This is the primary test layer covering all branches.
+
+2. **Encoding tests (`<file>.encoding.test.ts`)** — use the **real** CBOR encoder with deterministic
+   (mocked) randomness to verify byte-exact output. Expected bytes are derived from https://cbor.me using
+   CBOR diagnostic notation (see `docs/cbor-test-guide.md`). These are co-located alongside the unit tests
+   and catch encoding regressions that mocked tests cannot.
+
+Both file types are co-located with source and run as part of `npm test`. The `.encoding.test.ts` convention
+signals the test uses the real encoder — it is not a separate test tier or runner.
 
 ### Dependencies
 
