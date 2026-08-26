@@ -129,10 +129,7 @@ describe("buildMso", () => {
   describe("valueDigests", () => {
     it("passes valueDigests from input unchanged", () => {
       const valueDigests = new Map<string, Map<number, Uint8Array>>([
-        [
-          "org.iso.18013.5.1",
-          new Map([[7, new Uint8Array(32).fill(0xdd)]]),
-        ],
+        ["org.iso.18013.5.1", new Map([[7, new Uint8Array(32).fill(0xdd)]])],
       ]);
       const input = makeMsoInput({ valueDigests });
 
