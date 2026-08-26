@@ -1,7 +1,7 @@
-import type { DeviceKeyInfo } from "../deviceKey/index.js";
-import type { ValidityInfo } from "../validityInfo/index.js";
-import type { StatusList } from "../types/index.js";
-import { embeddedCbor, encode, tdate } from "../cbor/index.js";
+import type { DeviceKeyInfo } from "../deviceKey";
+import type { ValidityInfo } from "../validityInfo";
+import type { StatusList } from "../types";
+import { embeddedCbor, encode, tdate } from "../cbor";
 
 export interface MsoInput {
   docType: string;

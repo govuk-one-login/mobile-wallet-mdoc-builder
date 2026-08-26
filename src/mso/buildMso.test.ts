@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { DeviceKeyInfo } from "../deviceKey/index.js";
-import type { ValidityInfo } from "../validityInfo/index.js";
-import type { StatusList } from "../types/index.js";
+import type { DeviceKeyInfo } from "../deviceKey";
+import type { ValidityInfo } from "../validityInfo";
+import type { StatusList } from "../types";
 import type { MsoInput } from "./buildMso.js";
 
 const mockEncode = vi.fn<(value: unknown) => Uint8Array>();
