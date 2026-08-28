@@ -138,6 +138,113 @@ describe("nameSpacesSchema — dateFormat cross-field rule", () => {
       accepts(nameSpaces([["ns", [element({ elementValue: "Smith" })]]])),
     ).toBe(true);
   });
+
+  it("accepts an array of Dates with a dateFormat", () => {
+    expect(
+      accepts(
+        nameSpaces([
+          [
+            "ns",
+            [
+              element({
+                elementValue: [new Date("2020-01-01"), new Date("2021-01-01")],
+                dateFormat: DateFormat.FullDate,
+              }),
+            ],
+          ],
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  it("accepts an array of Dates without a dateFormat", () => {
+    expect(
+      accepts(
+        nameSpaces([
+          [
+            "ns",
+            [
+              element({
+                elementValue: [new Date("2020-01-01"), new Date("2021-01-01")],
+              }),
+            ],
+          ],
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects an array of non-Date values with a dateFormat", () => {
+    expect(
+      accepts(
+        nameSpaces([
+          [
+            "ns",
+            [
+              element({
+                elementValue: [1, 2, 3],
+                dateFormat: DateFormat.DateTime,
+              }),
+            ],
+          ],
+        ]),
+      ),
+    ).toBe(false);
+  });
+
+  it("accepts a Map of Dates with a dateFormat", () => {
+    expect(
+      accepts(
+        nameSpaces([
+          [
+            "ns",
+            [
+              element({
+                elementValue: new Map([["issued", new Date("2020-01-01")]]),
+                dateFormat: DateFormat.DateTime,
+              }),
+            ],
+          ],
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects a Map of non-Date values with a dateFormat", () => {
+    expect(
+      accepts(
+        nameSpaces([
+          [
+            "ns",
+            [
+              element({
+                elementValue: new Map([["count", 1]]),
+                dateFormat: DateFormat.DateTime,
+              }),
+            ],
+          ],
+        ]),
+      ),
+    ).toBe(false);
+  });
+
+  it("accepts an array of Maps of Dates with a dateFormat", () => {
+    expect(
+      accepts(
+        nameSpaces([
+          [
+            "ns",
+            [
+              element({
+                elementValue: [new Map([["issued", new Date("2020-01-01")]])],
+                dateFormat: DateFormat.FullDate,
+              }),
+            ],
+          ],
+        ]),
+      ),
+    ).toBe(true);
+  });
 });
 
 describe("nameSpacesSchema — collects multiple violations", () => {

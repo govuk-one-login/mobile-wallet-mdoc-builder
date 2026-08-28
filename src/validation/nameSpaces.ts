@@ -2,9 +2,25 @@ import { z } from "zod";
 import { VALIDATION_LIMITS } from "./constants.js";
 import { dataElementValueSchema } from "./dataElementValue.js";
 import { DateFormat } from "../types/index.js";
+import type { DataElementValue } from "../types/index.js";
 
 const { namespaceKey, elementIdentifier, minDataElements, maxDataElements } =
   VALIDATION_LIMITS.nameSpaces;
+
+function containsDate(value: unknown): boolean {
+  if (value instanceof Date) return true;
+  if (value instanceof Map) {
+    return value.values().next().value instanceof Date;
+  }
+  return false;
+}
+
+function isDateTyped(elementValue: DataElementValue): boolean {
+  if (Array.isArray(elementValue)) {
+    return containsDate(elementValue[0]);
+  }
+  return containsDate(elementValue);
+}
 
 const namespaceKeySchema = z
   .string()
@@ -21,12 +37,14 @@ const dataElementSchema = z
     dateFormat: z.enum(DateFormat).optional(),
   })
   .superRefine((element, ctx) => {
-    const isDate = element.elementValue instanceof Date;
-    if (!isDate && element.dateFormat !== undefined) {
+    if (
+      !isDateTyped(element.elementValue) &&
+      element.dateFormat !== undefined
+    ) {
       ctx.addIssue({
         code: "custom",
         message:
-          "dateFormat must not be provided when elementValue is not a Date",
+          "dateFormat must not be provided when elementValue is not date-typed",
         path: ["dateFormat"],
       });
     }
