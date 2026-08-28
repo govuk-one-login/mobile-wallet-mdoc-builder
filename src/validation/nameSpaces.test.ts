@@ -192,6 +192,12 @@ describe("nameSpacesSchema — dateFormat cross-field rule", () => {
     ).toBe(false);
   });
 
+  it("accepts an array of non-Date values without a dateFormat", () => {
+    expect(
+      accepts(nameSpaces([["ns", [element({ elementValue: [1, 2, 3] })]]])),
+    ).toBe(true);
+  });
+
   it("accepts a Map of Dates with a dateFormat", () => {
     expect(
       accepts(
@@ -200,8 +206,31 @@ describe("nameSpacesSchema — dateFormat cross-field rule", () => {
             "ns",
             [
               element({
-                elementValue: new Map([["issued", new Date("2020-01-01")]]),
+                elementValue: new Map([
+                  ["issued", new Date("2020-01-01")],
+                  ["expires", new Date("2021-01-01")],
+                ]),
                 dateFormat: DateFormat.DateTime,
+              }),
+            ],
+          ],
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  it("accepts a Map of Dates without a dateFormat", () => {
+    expect(
+      accepts(
+        nameSpaces([
+          [
+            "ns",
+            [
+              element({
+                elementValue: new Map([
+                  ["issued", new Date("2020-01-01")],
+                  ["expires", new Date("2021-01-01")],
+                ]),
               }),
             ],
           ],
@@ -244,6 +273,41 @@ describe("nameSpacesSchema — dateFormat cross-field rule", () => {
         ]),
       ),
     ).toBe(true);
+  });
+
+  it("accepts an array of Maps of Dates without a dateFormat", () => {
+    expect(
+      accepts(
+        nameSpaces([
+          [
+            "ns",
+            [
+              element({
+                elementValue: [new Map([["issued", new Date("2020-01-01")]])],
+              }),
+            ],
+          ],
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects an array of Maps of non-Date values with a dateFormat", () => {
+    expect(
+      accepts(
+        nameSpaces([
+          [
+            "ns",
+            [
+              element({
+                elementValue: [new Map([["count", 1]])],
+                dateFormat: DateFormat.DateTime,
+              }),
+            ],
+          ],
+        ]),
+      ),
+    ).toBe(false);
   });
 });
 
