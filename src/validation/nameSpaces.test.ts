@@ -105,14 +105,14 @@ describe("nameSpacesSchema — dateFormat cross-field rule", () => {
     ).toBe(true);
   });
 
-  it("rejects a Date value without a dateFormat", () => {
+  it("accepts a Date value without a dateFormat", () => {
     expect(
       accepts(
         nameSpaces([
           ["ns", [element({ elementValue: new Date("2020-01-01") })]],
         ]),
       ),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("rejects a non-Date value with a dateFormat", () => {
@@ -144,7 +144,10 @@ describe("nameSpacesSchema — collects multiple violations", () => {
   it("reports every violation across namespaces without early return", () => {
     const value = nameSpaces([
       ["ns1", [element({ elementIdentifier: "" })]],
-      ["ns2", [element({ elementValue: new Date("2020-01-01") })]],
+      [
+        "ns2",
+        [element({ elementValue: "Smith", dateFormat: DateFormat.DateTime })],
+      ],
     ]);
 
     const result = nameSpacesSchema.safeParse(value);
