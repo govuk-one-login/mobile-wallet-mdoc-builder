@@ -22,13 +22,6 @@ const dataElementSchema = z
   })
   .superRefine((element, ctx) => {
     const isDate = element.elementValue instanceof Date;
-    if (isDate && element.dateFormat === undefined) {
-      ctx.addIssue({
-        code: "custom",
-        message: "dateFormat is required when elementValue is a Date",
-        path: ["dateFormat"],
-      });
-    }
     if (!isDate && element.dateFormat !== undefined) {
       ctx.addIssue({
         code: "custom",
