@@ -309,6 +309,56 @@ describe("nameSpacesSchema — dateFormat cross-field rule", () => {
       ),
     ).toBe(false);
   });
+
+  // Regression guards for the date-typing seam (see H2): date detection is
+  // exhaustive and order-independent, so a mixed date/non-date collection is
+  // date-typed wherever the Date sits and is rejected by the homogeneity rule
+  // — not by the dateFormat rule. Asserting the message proves the correct
+  // rule fires regardless of element/entry order.
+  describe("mixed date/non-date collections fail on homogeneity, not dateFormat", () => {
+    const rejectsWithHomogeneityMessage = (
+      elementValue: DataElement["elementValue"],
+    ) => {
+      const result = nameSpacesSchema.safeParse(
+        nameSpaces([
+          ["ns", [element({ elementValue, dateFormat: DateFormat.FullDate })]],
+        ]),
+      );
+      if (result.success) throw new Error("expected failure");
+
+      const messages = result.error.issues.map((issue) => issue.message);
+      expect(messages).toContain("all values must be the same primitive type");
+      expect(messages).not.toContain(
+        "dateFormat must not be provided when elementValue is not date-typed",
+      );
+    };
+
+    it("reports homogeneity for a Date-first mixed array", () => {
+      rejectsWithHomogeneityMessage([new Date("2020-01-01"), 1]);
+    });
+
+    it("reports homogeneity for a Date-last mixed array", () => {
+      rejectsWithHomogeneityMessage([1, new Date("2020-01-01")]);
+    });
+
+    it("reports homogeneity for a Date-first mixed map", () => {
+      rejectsWithHomogeneityMessage(
+        new Map<string, Date | number>([
+          ["issued", new Date("2020-01-01")],
+          ["count", 1],
+        ]),
+      );
+    });
+
+    it("reports homogeneity for a Date-last mixed map", () => {
+      rejectsWithHomogeneityMessage(
+        new Map<string, Date | number>([
+          ["count", 1],
+          ["issued", new Date("2020-01-01")],
+        ]),
+      );
+    });
+  });
 });
 
 describe("nameSpacesSchema — collects multiple violations", () => {
