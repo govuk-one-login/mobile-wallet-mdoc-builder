@@ -110,6 +110,10 @@ describe("dataElementValueSchema — primitive maps", () => {
     ).toBe(false);
   });
 
+  it("rejects a map with a non-string (numeric) key", () => {
+    expect(accepts(new Map<unknown, unknown>([[1, "x"]]))).toBe(false);
+  });
+
   it("accepts a map at the maximum size", () => {
     const entries = Array.from(
       { length: maxLength },
@@ -146,6 +150,10 @@ describe("dataElementValueSchema — arrays of maps", () => {
         ]),
       ]),
     ).toBe(false);
+  });
+
+  it("rejects an array containing a map with a non-string (numeric) key", () => {
+    expect(accepts([new Map<unknown, unknown>([[1, "x"]])])).toBe(false);
   });
 
   it("allows different maps to have different (but internally homogeneous) types", () => {
