@@ -8,7 +8,7 @@ import { DateFormat } from "../types/index.js";
 import type { MdocBuilderInput } from "../types/index.js";
 
 const now = new Date("2026-01-01T00:00:00Z");
-const validUntil = new Date("2027-01-01T00:00:00Z");
+const validUntil = new Date("2999-01-01T00:00:00Z");
 
 const validInput = (): MdocBuilderInput => ({
   documentType: "org.iso.18013.5.1.mDL",

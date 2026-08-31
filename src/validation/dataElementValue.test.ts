@@ -136,9 +136,10 @@ describe("dataElementValueSchema — arrays of maps", () => {
     expect(accepts([new Map([["a", 1]]), new Map([["b", 2]])])).toBe(true);
   });
 
-  it("rejects an empty array of maps", () => {
-    // An empty array is covered by the array branch; ensure it fails overall.
-    expect(accepts([])).toBe(false);
+  it("rejects an array containing an empty map", () => {
+    // The empty-outer-array case is covered by the primitive-arrays branch;
+    // this exercises the arrays-of-maps "each map must not be empty" rule.
+    expect(accepts([new Map()])).toBe(false);
   });
 
   it("rejects when an individual map has mixed value types", () => {
