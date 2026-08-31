@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { nameSpacesSchema } from "./nameSpaces.js";
+import { mapZodErrorToValidationErrors } from "./errors.js";
 import { VALIDATION_LIMITS } from "./constants.js";
 import { DateFormat } from "../types/index.js";
 import type { DataElement } from "../types/index.js";
@@ -116,21 +117,22 @@ describe("nameSpacesSchema — dateFormat cross-field rule", () => {
   });
 
   it("rejects a non-Date value with a dateFormat", () => {
-    expect(
-      accepts(
-        nameSpaces([
-          [
-            "ns",
-            [
-              element({
-                elementValue: "Smith",
-                dateFormat: DateFormat.DateTime,
-              }),
-            ],
-          ],
-        ]),
-      ),
-    ).toBe(false);
+    const result = nameSpacesSchema.safeParse(
+      nameSpaces([
+        [
+          "ns",
+          [element({ elementValue: "Smith", dateFormat: DateFormat.DateTime })],
+        ],
+      ]),
+    );
+    if (result.success) throw new Error("expected failure");
+
+    const errors = mapZodErrorToValidationErrors(result.error);
+    expect(errors).toContainEqual({
+      field: "ns[0].dateFormat",
+      message:
+        "dateFormat must not be provided when elementValue is not date-typed",
+    });
   });
 
   it("accepts a non-Date value without a dateFormat", () => {

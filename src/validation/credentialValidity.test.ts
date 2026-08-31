@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { credentialValiditySchema } from "./credentialValidity.js";
+import { mapZodErrorToValidationErrors } from "./errors.js";
+import type { ValidationError } from "./errors.js";
 import type { CredentialValidity } from "../types/index.js";
 
 const now = new Date("2026-01-01T00:00:00Z");
@@ -11,13 +13,22 @@ const past = new Date("2025-01-01T00:00:00Z");
 
 const accepts = (value: CredentialValidity) => schema.safeParse(value).success;
 
+const errorsFor = (value: CredentialValidity): ValidationError[] => {
+  const result = schema.safeParse(value);
+  if (result.success) throw new Error("expected failure");
+  return mapZodErrorToValidationErrors(result.error);
+};
+
 describe("credentialValiditySchema — validUntil", () => {
   it("accepts a validUntil after now", () => {
     expect(accepts({ validUntil: future })).toBe(true);
   });
 
   it("rejects a validUntil before now", () => {
-    expect(accepts({ validUntil: past })).toBe(false);
+    expect(errorsFor({ validUntil: past })).toContainEqual({
+      field: "validUntil",
+      message: "must be after the current time",
+    });
   });
 
   it("rejects a validUntil exactly at now (zero tolerance)", () => {
@@ -47,9 +58,12 @@ describe("credentialValiditySchema — earliestValidFrom", () => {
   });
 
   it("rejects when equal to validUntil", () => {
-    expect(accepts({ earliestValidFrom: future, validUntil: future })).toBe(
-      false,
-    );
+    expect(
+      errorsFor({ earliestValidFrom: future, validUntil: future }),
+    ).toContainEqual({
+      field: "earliestValidFrom",
+      message: "must be before validUntil",
+    });
   });
 
   it("rejects when after validUntil", () => {
@@ -81,9 +95,12 @@ describe("credentialValiditySchema — expectedUpdate", () => {
   });
 
   it("rejects when after validUntil", () => {
-    expect(accepts({ validUntil: future, expectedUpdate: laterFuture })).toBe(
-      false,
-    );
+    expect(
+      errorsFor({ validUntil: future, expectedUpdate: laterFuture }),
+    ).toContainEqual({
+      field: "expectedUpdate",
+      message: "must be before or equal to validUntil",
+    });
   });
 
   it("rejects an Invalid Date expectedUpdate", () => {
