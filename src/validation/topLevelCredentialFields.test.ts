@@ -114,6 +114,12 @@ describe("statusListSchema", () => {
       false,
     );
   });
+
+  it("rejects an unknown key", () => {
+    expect(
+      statusListSchema.safeParse({ ...valid, unexpected: "value" }).success,
+    ).toBe(false);
+  });
 });
 
 describe("certificateChainSchema", () => {

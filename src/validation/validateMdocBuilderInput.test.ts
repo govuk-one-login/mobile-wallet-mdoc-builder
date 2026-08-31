@@ -82,6 +82,29 @@ describe("mdocBuilderInputSchema — deterministic clock", () => {
     expect(errors.length).toBeGreaterThanOrEqual(5);
   });
 
+  it("rejects an unknown top-level key", () => {
+    const input = {
+      ...validInput(),
+      unexpected: "value",
+    } as unknown as MdocBuilderInput;
+
+    const errors = validate(input);
+    expect(errors.map((e) => e.field)).toContain("unexpected");
+  });
+
+  it("rejects a misspelled top-level key (nameSpaces -> namespace)", () => {
+    const { nameSpaces, ...rest } = validInput();
+    const input = {
+      ...rest,
+      namespace: nameSpaces,
+    } as unknown as MdocBuilderInput;
+
+    const errors = validate(input);
+    const fields = errors.map((e) => e.field);
+    expect(fields).toContain("namespace");
+    expect(fields).toContain("nameSpaces");
+  });
+
   it("produces nested field paths in the ticket format", () => {
     const input = validInput();
     input.nameSpaces = new Map([

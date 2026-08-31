@@ -70,6 +70,31 @@ describe("mapZodErrorToValidationErrors", () => {
     expect(errors.every((e) => e.message.length > 0)).toBe(true);
   });
 
+  it("expands an unrecognized-keys issue into one error per offending key", () => {
+    const schema = z.object({ a: z.string() }).strict();
+
+    const result = schema.safeParse({ a: "x", foo: 1, bar: 2 });
+    if (result.success) throw new Error("expected failure");
+
+    const errors = mapZodErrorToValidationErrors(result.error);
+
+    expect(errors.map((e) => e.field)).toEqual(["foo", "bar"]);
+    expect(errors.every((e) => e.message.length > 0)).toBe(true);
+  });
+
+  it("prefixes unrecognized keys with the nested object path", () => {
+    const schema = z.object({
+      outer: z.object({ a: z.string() }).strict(),
+    });
+
+    const result = schema.safeParse({ outer: { a: "x", foo: 1 } });
+    if (result.success) throw new Error("expected failure");
+
+    const errors = mapZodErrorToValidationErrors(result.error);
+
+    expect(errors.map((e) => e.field)).toEqual(["outer.foo"]);
+  });
+
   it("translates map and array paths into the dotted-bracket format", () => {
     // Mirrors the nameSpaces shape: Map<string, Array<{ ... }>>.
     const schema = z.map(z.string(), z.array(z.object({ v: z.string() })));
