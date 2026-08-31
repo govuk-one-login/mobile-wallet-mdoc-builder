@@ -25,10 +25,12 @@ export const deviceKeySchema = byteLengthSchema(
   deviceKey.maxByteLength,
 );
 
-export const statusListSchema = z.object({
-  idx: z.number().int().min(statusList.idx.min).max(statusList.idx.max),
-  uri: z.url().max(statusList.uri.maxLength),
-});
+export const statusListSchema = z
+  .object({
+    idx: z.number().int().min(statusList.idx.min).max(statusList.idx.max),
+    uri: z.url().max(statusList.uri.maxLength),
+  })
+  .strict();
 
 export const certificateChainSchema = z
   .array(

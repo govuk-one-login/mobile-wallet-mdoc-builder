@@ -11,14 +11,16 @@ import { mapZodErrorToValidationErrors } from "./errors.js";
 import type { ValidationError } from "./errors.js";
 
 export function mdocBuilderInputSchema(now: Date) {
-  return z.object({
-    documentType: documentTypeSchema,
-    nameSpaces: nameSpacesSchema,
-    deviceKey: deviceKeySchema,
-    credentialValidity: credentialValiditySchema(now),
-    statusList: statusListSchema,
-    certificateChain: certificateChainSchema,
-  });
+  return z
+    .object({
+      documentType: documentTypeSchema,
+      nameSpaces: nameSpacesSchema,
+      deviceKey: deviceKeySchema,
+      credentialValidity: credentialValiditySchema(now),
+      statusList: statusListSchema,
+      certificateChain: certificateChainSchema,
+    })
+    .strict();
 }
 
 export function validateMdocBuilderInput(input: unknown): ValidationError[] {

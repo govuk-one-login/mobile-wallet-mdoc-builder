@@ -18,8 +18,17 @@ export function formatFieldPath(path: readonly PropertyKey[]): string {
 export function mapZodErrorToValidationErrors(
   error: ZodError,
 ): ValidationError[] {
-  return error.issues.map((issue) => ({
-    field: formatFieldPath(issue.path),
-    message: issue.message,
-  }));
+  return error.issues.flatMap((issue) => {
+    if (issue.code === "unrecognized_keys") {
+      return issue.keys.map((key) => ({
+        field: formatFieldPath([...issue.path, key]),
+        message: issue.message,
+      }));
+    }
+
+    return {
+      field: formatFieldPath(issue.path),
+      message: issue.message,
+    };
+  });
 }
