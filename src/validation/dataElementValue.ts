@@ -66,7 +66,7 @@ const primitiveMapArraySchema = z
   .refine((maps) => maps.every((map) => map.size <= maxLength), {
     message: `each map must not exceed ${maxLength.toString()} entries`,
   })
-  .refine((maps) => maps.every((map) => isHomogeneous(map.values())), {
+  .refine((maps) => isHomogeneous(maps.flatMap((map) => [...map.values()])), {
     message: HOMOGENEITY_MESSAGE,
   });
 

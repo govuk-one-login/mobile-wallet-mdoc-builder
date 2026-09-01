@@ -157,9 +157,9 @@ describe("dataElementValueSchema — arrays of maps", () => {
     expect(accepts([new Map<unknown, unknown>([[1, "x"]])])).toBe(false);
   });
 
-  it("allows different maps to have different (but internally homogeneous) types", () => {
-    // Homogeneity is per-map, not across the array.
-    expect(accepts([new Map([["a", 1]]), new Map([["b", "two"]])])).toBe(true);
+  it("rejects an array where maps have different primitive types", () => {
+    // All maps in an array must share one primitive type.
+    expect(accepts([new Map([["a", 1]]), new Map([["b", "two"]])])).toBe(false);
   });
 
   it("rejects an array of maps over the maximum length", () => {
@@ -184,5 +184,23 @@ describe("dataElementValueSchema — arrays of maps", () => {
       (_, i) => [`k${i.toString()}`, i] as [string, number],
     );
     expect(accepts([new Map(entries)])).toBe(false);
+  });
+
+  it("accepts an array where every map is date-typed", () => {
+    expect(
+      accepts([
+        new Map([["issued", new Date("2020-01-01")]]),
+        new Map([["expires", new Date("2021-01-01")]]),
+      ]),
+    ).toBe(true);
+  });
+
+  it("rejects an array mixing a date-typed and a non-date-typed map", () => {
+    expect(
+      accepts([
+        new Map([["issued", new Date("2020-01-01")]]),
+        new Map([["count", 1]]),
+      ]),
+    ).toBe(false);
   });
 });
