@@ -96,323 +96,210 @@ describe("nameSpacesSchema — data element arrays", () => {
 });
 
 describe("nameSpacesSchema — dateFormat cross-field rule", () => {
-  it("accepts a Date value with a dateFormat", () => {
-    expect(
-      accepts(
+  describe("primitives", () => {
+    it("accepts a Date value with a dateFormat", () => {
+      expect(
+        accepts(
+          nameSpaces([
+            [
+              "ns",
+              [
+                element({
+                  elementValue: new Date("2020-01-01"),
+                  dateFormat: DateFormat.FullDate,
+                }),
+              ],
+            ],
+          ]),
+        ),
+      ).toBe(true);
+    });
+
+    it("accepts a Date value without a dateFormat", () => {
+      expect(
+        accepts(
+          nameSpaces([
+            ["ns", [element({ elementValue: new Date("2020-01-01") })]],
+          ]),
+        ),
+      ).toBe(true);
+    });
+
+    it("rejects a non-Date value with a dateFormat", () => {
+      const result = nameSpacesSchema.safeParse(
         nameSpaces([
           [
             "ns",
             [
               element({
-                elementValue: new Date("2020-01-01"),
-                dateFormat: DateFormat.FullDate,
+                elementValue: "Smith",
+                dateFormat: DateFormat.DateTime,
               }),
             ],
           ],
         ]),
-      ),
-    ).toBe(true);
-  });
+      );
+      if (result.success) throw new Error("expected failure");
 
-  it("accepts a Date value without a dateFormat", () => {
-    expect(
-      accepts(
-        nameSpaces([
-          ["ns", [element({ elementValue: new Date("2020-01-01") })]],
-        ]),
-      ),
-    ).toBe(true);
-  });
+      const errors = mapZodErrorToValidationErrors(result.error);
+      expect(errors).toContainEqual({
+        field: "ns[0].dateFormat",
+        message:
+          "dateFormat must not be provided when elementValue is not date-typed",
+      });
+    });
 
-  it("rejects a non-Date value with a dateFormat", () => {
-    const result = nameSpacesSchema.safeParse(
-      nameSpaces([
-        [
-          "ns",
-          [element({ elementValue: "Smith", dateFormat: DateFormat.DateTime })],
-        ],
-      ]),
-    );
-    if (result.success) throw new Error("expected failure");
-
-    const errors = mapZodErrorToValidationErrors(result.error);
-    expect(errors).toContainEqual({
-      field: "ns[0].dateFormat",
-      message:
-        "dateFormat must not be provided when elementValue is not date-typed",
+    it("accepts a non-Date value without a dateFormat", () => {
+      expect(
+        accepts(nameSpaces([["ns", [element({ elementValue: "Smith" })]]])),
+      ).toBe(true);
     });
   });
 
-  it("accepts a non-Date value without a dateFormat", () => {
-    expect(
-      accepts(nameSpaces([["ns", [element({ elementValue: "Smith" })]]])),
-    ).toBe(true);
-  });
-
-  it("accepts an array of Dates with a dateFormat", () => {
-    expect(
-      accepts(
-        nameSpaces([
-          [
-            "ns",
+  describe("arrays", () => {
+    it("accepts an array of Dates with a dateFormat", () => {
+      expect(
+        accepts(
+          nameSpaces([
             [
-              element({
-                elementValue: [new Date("2020-01-01"), new Date("2021-01-01")],
-                dateFormat: DateFormat.FullDate,
-              }),
+              "ns",
+              [
+                element({
+                  elementValue: [
+                    new Date("2020-01-01"),
+                    new Date("2021-01-01"),
+                  ],
+                  dateFormat: DateFormat.FullDate,
+                }),
+              ],
             ],
-          ],
-        ]),
-      ),
-    ).toBe(true);
-  });
+          ]),
+        ),
+      ).toBe(true);
+    });
 
-  it("accepts an array of Dates without a dateFormat", () => {
-    expect(
-      accepts(
-        nameSpaces([
-          [
-            "ns",
+    it("accepts an array of Dates without a dateFormat", () => {
+      expect(
+        accepts(
+          nameSpaces([
             [
-              element({
-                elementValue: [new Date("2020-01-01"), new Date("2021-01-01")],
-              }),
+              "ns",
+              [
+                element({
+                  elementValue: [
+                    new Date("2020-01-01"),
+                    new Date("2021-01-01"),
+                  ],
+                }),
+              ],
             ],
-          ],
-        ]),
-      ),
-    ).toBe(true);
-  });
+          ]),
+        ),
+      ).toBe(true);
+    });
 
-  it("rejects an array of non-Date values with a dateFormat", () => {
-    expect(
-      accepts(
-        nameSpaces([
-          [
-            "ns",
+    it("rejects an array of non-Date values with a dateFormat", () => {
+      expect(
+        accepts(
+          nameSpaces([
             [
-              element({
-                elementValue: [1, 2, 3],
-                dateFormat: DateFormat.DateTime,
-              }),
+              "ns",
+              [
+                element({
+                  elementValue: [1, 2, 3],
+                  dateFormat: DateFormat.DateTime,
+                }),
+              ],
             ],
-          ],
-        ]),
-      ),
-    ).toBe(false);
+          ]),
+        ),
+      ).toBe(false);
+    });
+
+    it("accepts an array of non-Date values without a dateFormat", () => {
+      expect(
+        accepts(nameSpaces([["ns", [element({ elementValue: [1, 2, 3] })]]])),
+      ).toBe(true);
+    });
   });
 
-  it("accepts an array of non-Date values without a dateFormat", () => {
-    expect(
-      accepts(nameSpaces([["ns", [element({ elementValue: [1, 2, 3] })]]])),
-    ).toBe(true);
-  });
-
-  it("accepts a Map of Dates with a dateFormat", () => {
-    expect(
-      accepts(
-        nameSpaces([
-          [
-            "ns",
+  describe("maps", () => {
+    it("accepts a Map of Dates with a dateFormat", () => {
+      expect(
+        accepts(
+          nameSpaces([
             [
-              element({
-                elementValue: new Map([
-                  ["issued", new Date("2020-01-01")],
-                  ["expires", new Date("2021-01-01")],
-                ]),
-                dateFormat: DateFormat.DateTime,
-              }),
+              "ns",
+              [
+                element({
+                  elementValue: new Map([
+                    ["issued", new Date("2020-01-01")],
+                    ["expires", new Date("2021-01-01")],
+                  ]),
+                  dateFormat: DateFormat.DateTime,
+                }),
+              ],
             ],
-          ],
-        ]),
-      ),
-    ).toBe(true);
-  });
+          ]),
+        ),
+      ).toBe(true);
+    });
 
-  it("accepts a Map of Dates without a dateFormat", () => {
-    expect(
-      accepts(
-        nameSpaces([
-          [
-            "ns",
+    it("accepts a Map of Dates without a dateFormat", () => {
+      expect(
+        accepts(
+          nameSpaces([
             [
-              element({
-                elementValue: new Map([
-                  ["issued", new Date("2020-01-01")],
-                  ["expires", new Date("2021-01-01")],
-                ]),
-              }),
+              "ns",
+              [
+                element({
+                  elementValue: new Map([
+                    ["issued", new Date("2020-01-01")],
+                    ["expires", new Date("2021-01-01")],
+                  ]),
+                }),
+              ],
             ],
-          ],
-        ]),
-      ),
-    ).toBe(true);
-  });
+          ]),
+        ),
+      ).toBe(true);
+    });
 
-  it("rejects a Map of non-Date values with a dateFormat", () => {
-    expect(
-      accepts(
-        nameSpaces([
-          [
-            "ns",
+    it("rejects a Map of non-Date values with a dateFormat", () => {
+      expect(
+        accepts(
+          nameSpaces([
             [
-              element({
-                elementValue: new Map([["count", 1]]),
-                dateFormat: DateFormat.DateTime,
-              }),
+              "ns",
+              [
+                element({
+                  elementValue: new Map([["count", 1]]),
+                  dateFormat: DateFormat.DateTime,
+                }),
+              ],
             ],
-          ],
-        ]),
-      ),
-    ).toBe(false);
-  });
+          ]),
+        ),
+      ).toBe(false);
+    });
 
-  it("accepts an array of Maps of Dates with a dateFormat", () => {
-    expect(
-      accepts(
-        nameSpaces([
-          [
-            "ns",
-            [
-              element({
-                elementValue: [new Map([["issued", new Date("2020-01-01")]])],
-                dateFormat: DateFormat.FullDate,
-              }),
-            ],
-          ],
-        ]),
-      ),
-    ).toBe(true);
-  });
-
-  it("accepts an array of Maps of Dates without a dateFormat", () => {
-    expect(
-      accepts(
-        nameSpaces([
-          [
-            "ns",
-            [
-              element({
-                elementValue: [new Map([["issued", new Date("2020-01-01")]])],
-              }),
-            ],
-          ],
-        ]),
-      ),
-    ).toBe(true);
-  });
-
-  it("rejects an array of Maps of non-Date values with a dateFormat", () => {
-    expect(
-      accepts(
-        nameSpaces([
-          [
-            "ns",
-            [
-              element({
-                elementValue: [new Map([["count", 1]])],
-                dateFormat: DateFormat.DateTime,
-              }),
-            ],
-          ],
-        ]),
-      ),
-    ).toBe(false);
-  });
-
-  it("rejects an array of maps with a dateFormat when only some maps are date-typed (Date-map first)", () => {
-    expect(
-      accepts(
-        nameSpaces([
-          [
-            "ns",
-            [
-              element({
-                elementValue: [
-                  new Map([["issued", new Date("2020-01-01")]]),
-                  new Map([["count", 1]]),
-                ],
-                dateFormat: DateFormat.DateTime,
-              }),
-            ],
-          ],
-        ]),
-      ),
-    ).toBe(false);
-  });
-
-  it("rejects an array of maps with a dateFormat when only some maps are date-typed (Date-map last)", () => {
-    expect(
-      accepts(
-        nameSpaces([
-          [
-            "ns",
-            [
-              element({
-                elementValue: [
-                  new Map([["count", 1]]),
-                  new Map([["issued", new Date("2020-01-01")]]),
-                ],
-                dateFormat: DateFormat.DateTime,
-              }),
-            ],
-          ],
-        ]),
-      ),
-    ).toBe(false);
-  });
-
-  it("accepts an array of partially date-typed maps without a dateFormat", () => {
-    expect(
-      accepts(
-        nameSpaces([
-          [
-            "ns",
-            [
-              element({
-                elementValue: [
-                  new Map([["count", 1]]),
-                  new Map([["issued", new Date("2020-01-01")]]),
-                ],
-              }),
-            ],
-          ],
-        ]),
-      ),
-    ).toBe(true);
-  });
-
-  it("accepts an array where every map is date-typed with a dateFormat", () => {
-    expect(
-      accepts(
-        nameSpaces([
-          [
-            "ns",
-            [
-              element({
-                elementValue: [
-                  new Map([["issued", new Date("2020-01-01")]]),
-                  new Map([["expires", new Date("2021-01-01")]]),
-                ],
-                dateFormat: DateFormat.FullDate,
-              }),
-            ],
-          ],
-        ]),
-      ),
-    ).toBe(true);
-  });
-
-  // A mixed date/non-date map is a single date-typed value (it holds a Date),
-  // so it fails on homogeneity only — not the dateFormat rule — regardless of
-  // entry order.
-  describe("mixed date/non-date maps fail on homogeneity, not dateFormat", () => {
-    const rejectsWithHomogeneityMessage = (
-      elementValue: DataElement["elementValue"],
-    ) => {
+    // A mixed date/non-date map holds a Date, so it is date-typed and the
+    // dateFormat rule stays silent — the failure is homogeneity only.
+    it("reports homogeneity, not dateFormat, for a mixed map", () => {
       const result = nameSpacesSchema.safeParse(
         nameSpaces([
-          ["ns", [element({ elementValue, dateFormat: DateFormat.FullDate })]],
+          [
+            "ns",
+            [
+              element({
+                elementValue: new Map<string, Date | number>([
+                  ["issued", new Date("2020-01-01")],
+                  ["count", 1],
+                ]),
+                dateFormat: DateFormat.FullDate,
+              }),
+            ],
+          ],
         ]),
       );
       if (result.success) throw new Error("expected failure");
@@ -422,51 +309,61 @@ describe("nameSpacesSchema — dateFormat cross-field rule", () => {
       expect(messages).not.toContain(
         "dateFormat must not be provided when elementValue is not date-typed",
       );
-    };
-
-    it("reports homogeneity for a Date-first mixed map", () => {
-      rejectsWithHomogeneityMessage(
-        new Map<string, Date | number>([
-          ["issued", new Date("2020-01-01")],
-          ["count", 1],
-        ]),
-      );
-    });
-
-    it("reports homogeneity for a Date-last mixed map", () => {
-      rejectsWithHomogeneityMessage(
-        new Map<string, Date | number>([
-          ["count", 1],
-          ["issued", new Date("2020-01-01")],
-        ]),
-      );
     });
   });
 
-  // A mixed date/non-date array is not date-typed under the strict all-elements
-  // rule, so it is rejected. Homogeneity is the primary violation; dateFormat
-  // may also fire since the array is not date-typed. Order-independent.
-  describe("mixed date/non-date arrays are rejected on homogeneity", () => {
-    const rejectsWithHomogeneityMessage = (
-      elementValue: DataElement["elementValue"],
-    ) => {
-      const result = nameSpacesSchema.safeParse(
-        nameSpaces([
-          ["ns", [element({ elementValue, dateFormat: DateFormat.FullDate })]],
-        ]),
-      );
-      if (result.success) throw new Error("expected failure");
-
-      const messages = result.error.issues.map((issue) => issue.message);
-      expect(messages).toContain("all values must be the same primitive type");
-    };
-
-    it("reports homogeneity for a Date-first mixed array", () => {
-      rejectsWithHomogeneityMessage([new Date("2020-01-01"), 1]);
+  describe("arrays of maps", () => {
+    it("accepts an array of Maps of Dates with a dateFormat", () => {
+      expect(
+        accepts(
+          nameSpaces([
+            [
+              "ns",
+              [
+                element({
+                  elementValue: [new Map([["issued", new Date("2020-01-01")]])],
+                  dateFormat: DateFormat.FullDate,
+                }),
+              ],
+            ],
+          ]),
+        ),
+      ).toBe(true);
     });
 
-    it("reports homogeneity for a Date-last mixed array", () => {
-      rejectsWithHomogeneityMessage([1, new Date("2020-01-01")]);
+    it("accepts an array of Maps of Dates without a dateFormat", () => {
+      expect(
+        accepts(
+          nameSpaces([
+            [
+              "ns",
+              [
+                element({
+                  elementValue: [new Map([["issued", new Date("2020-01-01")]])],
+                }),
+              ],
+            ],
+          ]),
+        ),
+      ).toBe(true);
+    });
+
+    it("rejects an array of Maps of non-Date values with a dateFormat", () => {
+      expect(
+        accepts(
+          nameSpaces([
+            [
+              "ns",
+              [
+                element({
+                  elementValue: [new Map([["count", 1]])],
+                  dateFormat: DateFormat.DateTime,
+                }),
+              ],
+            ],
+          ]),
+        ),
+      ).toBe(false);
     });
   });
 });
