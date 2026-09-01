@@ -2,7 +2,6 @@ import { z } from "zod";
 import { VALIDATION_LIMITS } from "./constants.js";
 import { dataElementValueSchema } from "./dataElementValue.js";
 import { DateFormat } from "../types/index.js";
-import type { DataElementValue } from "../types/index.js";
 
 const { namespaceKey, elementIdentifier, minDataElements, maxDataElements } =
   VALIDATION_LIMITS.nameSpaces;
@@ -10,19 +9,15 @@ const { namespaceKey, elementIdentifier, minDataElements, maxDataElements } =
 // A value is date-typed if it holds a Date. Homogeneity guarantees collections
 // are a single primitive type, so a Date anywhere means the whole value is
 // date-typed.
-function containsDate(value: unknown): boolean {
+function isDateTyped(value: unknown): boolean {
   if (value instanceof Date) return true;
   if (value instanceof Map) {
     return [...value.values()].some((v) => v instanceof Date);
   }
   if (Array.isArray(value)) {
-    return value.some(containsDate);
+    return value.some(isDateTyped);
   }
   return false;
-}
-
-function isDateTyped(elementValue: DataElementValue): boolean {
-  return containsDate(elementValue);
 }
 
 const namespaceKeySchema = z
