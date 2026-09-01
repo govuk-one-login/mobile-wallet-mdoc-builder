@@ -7,12 +7,10 @@ import type { DataElementValue } from "../types/index.js";
 const { namespaceKey, elementIdentifier, minDataElements, maxDataElements } =
   VALIDATION_LIMITS.nameSpaces;
 
-// Date-typing is exhaustive: a value is date-typed if a Date appears anywhere
-// within it. This mirrors the encoder (issuerSigned/buildSingleItem), which
-// applies dateFormat to every Date it finds, and keeps the check independent of
-// element order. Type uniformity is enforced separately by the homogeneity
-// rule, so a mixed date/non-date collection is date-typed here and rejected by
-// homogeneity — not by the dateFormat rule.
+// A value is date-typed if it holds a Date. For arrays (of primitives or Maps),
+// EVERY element must be date-typed — dateFormat is only permitted when the whole
+// collection is date-typed. Within-collection type uniformity is enforced by the
+// homogeneity rule, not here.
 function containsDate(value: unknown): boolean {
   if (value instanceof Date) return true;
   if (value instanceof Map) {
@@ -23,7 +21,7 @@ function containsDate(value: unknown): boolean {
 
 function isDateTyped(elementValue: DataElementValue): boolean {
   if (Array.isArray(elementValue)) {
-    return elementValue.some(containsDate);
+    return elementValue.every(containsDate);
   }
   return containsDate(elementValue);
 }

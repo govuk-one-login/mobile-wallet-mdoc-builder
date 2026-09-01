@@ -22,6 +22,14 @@ const accepts = (value: unknown) => nameSpacesSchema.safeParse(value).success;
 
 describe("nameSpacesSchema — map structure", () => {
   it("accepts a valid single-namespace map", () => {
+    /*
+      {
+        "org.iso.18013.5.1": [{
+          elementIdentifier: "family_name",
+          elementValue: "Smith",
+        }]
+      }
+     */
     expect(accepts(nameSpaces([["org.iso.18013.5.1", [element()]]]))).toBe(
       true,
     );
@@ -312,12 +320,93 @@ describe("nameSpacesSchema — dateFormat cross-field rule", () => {
     ).toBe(false);
   });
 
-  // Regression guards for the date-typing seam (see H2): date detection is
-  // exhaustive and order-independent, so a mixed date/non-date collection is
-  // date-typed wherever the Date sits and is rejected by the homogeneity rule
-  // — not by the dateFormat rule. Asserting the message proves the correct
-  // rule fires regardless of element/entry order.
-  describe("mixed date/non-date collections fail on homogeneity, not dateFormat", () => {
+  it("rejects an array of maps with a dateFormat when only some maps are date-typed (Date-map first)", () => {
+    expect(
+      accepts(
+        nameSpaces([
+          [
+            "ns",
+            [
+              element({
+                elementValue: [
+                  new Map([["issued", new Date("2020-01-01")]]),
+                  new Map([["count", 1]]),
+                ],
+                dateFormat: DateFormat.DateTime,
+              }),
+            ],
+          ],
+        ]),
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects an array of maps with a dateFormat when only some maps are date-typed (Date-map last)", () => {
+    expect(
+      accepts(
+        nameSpaces([
+          [
+            "ns",
+            [
+              element({
+                elementValue: [
+                  new Map([["count", 1]]),
+                  new Map([["issued", new Date("2020-01-01")]]),
+                ],
+                dateFormat: DateFormat.DateTime,
+              }),
+            ],
+          ],
+        ]),
+      ),
+    ).toBe(false);
+  });
+
+  it("accepts an array of partially date-typed maps without a dateFormat", () => {
+    expect(
+      accepts(
+        nameSpaces([
+          [
+            "ns",
+            [
+              element({
+                elementValue: [
+                  new Map([["count", 1]]),
+                  new Map([["issued", new Date("2020-01-01")]]),
+                ],
+              }),
+            ],
+          ],
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  it("accepts an array where every map is date-typed with a dateFormat", () => {
+    expect(
+      accepts(
+        nameSpaces([
+          [
+            "ns",
+            [
+              element({
+                elementValue: [
+                  new Map([["issued", new Date("2020-01-01")]]),
+                  new Map([["expires", new Date("2021-01-01")]]),
+                ],
+                dateFormat: DateFormat.FullDate,
+              }),
+            ],
+          ],
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  // A mixed date/non-date map is a single date-typed value (it holds a Date),
+  // so it fails on homogeneity only — not the dateFormat rule — regardless of
+  // entry order.
+  describe("mixed date/non-date maps fail on homogeneity, not dateFormat", () => {
     const rejectsWithHomogeneityMessage = (
       elementValue: DataElement["elementValue"],
     ) => {
@@ -335,14 +424,6 @@ describe("nameSpacesSchema — dateFormat cross-field rule", () => {
       );
     };
 
-    it("reports homogeneity for a Date-first mixed array", () => {
-      rejectsWithHomogeneityMessage([new Date("2020-01-01"), 1]);
-    });
-
-    it("reports homogeneity for a Date-last mixed array", () => {
-      rejectsWithHomogeneityMessage([1, new Date("2020-01-01")]);
-    });
-
     it("reports homogeneity for a Date-first mixed map", () => {
       rejectsWithHomogeneityMessage(
         new Map<string, Date | number>([
@@ -359,6 +440,33 @@ describe("nameSpacesSchema — dateFormat cross-field rule", () => {
           ["issued", new Date("2020-01-01")],
         ]),
       );
+    });
+  });
+
+  // A mixed date/non-date array is not date-typed under the strict all-elements
+  // rule, so it is rejected. Homogeneity is the primary violation; dateFormat
+  // may also fire since the array is not date-typed. Order-independent.
+  describe("mixed date/non-date arrays are rejected on homogeneity", () => {
+    const rejectsWithHomogeneityMessage = (
+      elementValue: DataElement["elementValue"],
+    ) => {
+      const result = nameSpacesSchema.safeParse(
+        nameSpaces([
+          ["ns", [element({ elementValue, dateFormat: DateFormat.FullDate })]],
+        ]),
+      );
+      if (result.success) throw new Error("expected failure");
+
+      const messages = result.error.issues.map((issue) => issue.message);
+      expect(messages).toContain("all values must be the same primitive type");
+    };
+
+    it("reports homogeneity for a Date-first mixed array", () => {
+      rejectsWithHomogeneityMessage([new Date("2020-01-01"), 1]);
+    });
+
+    it("reports homogeneity for a Date-last mixed array", () => {
+      rejectsWithHomogeneityMessage([1, new Date("2020-01-01")]);
     });
   });
 });
