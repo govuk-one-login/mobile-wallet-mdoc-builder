@@ -169,4 +169,20 @@ describe("dataElementValueSchema — arrays of maps", () => {
     );
     expect(accepts(maps)).toBe(false);
   });
+
+  it("accepts an array containing a map at the maximum size", () => {
+    const entries = Array.from(
+      { length: maxLength },
+      (_, i) => [`k${i.toString()}`, i] as [string, number],
+    );
+    expect(accepts([new Map(entries)])).toBe(true);
+  });
+
+  it("rejects an array containing a map over the maximum size", () => {
+    const entries = Array.from(
+      { length: maxLength + 1 },
+      (_, i) => [`k${i.toString()}`, i] as [string, number],
+    );
+    expect(accepts([new Map(entries)])).toBe(false);
+  });
 });
