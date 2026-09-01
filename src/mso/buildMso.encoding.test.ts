@@ -2,10 +2,6 @@ import { describe, expect, it } from "vitest";
 import type { DeviceKeyInfo } from "../deviceKey";
 import type { ValidityInfo } from "../validityInfo";
 import type { StatusList } from "../types";
-// NOTE: do NOT mock src/cbor here — this suite uses the real encoder to assert
-// byte-exact MSO output. The MSO is the signed payload, so any byte-level
-// regression (tag numbers, tdate timezone, integer form, map length) would
-// silently break verification. The mocked buildMso.test.ts cannot catch these.
 import { buildMso, type MsoInput } from "./buildMso.js";
 
 /**
