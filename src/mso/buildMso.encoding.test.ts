@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import type { DeviceKeyInfo } from "../deviceKey";
 import type { ValidityInfo } from "../validityInfo";
 import type { StatusList } from "../types";
+// NOTE: do NOT mock src/cbor here — this suite uses the real encoder to assert
+// byte-exact MSO output. The MSO is the signed payload, so any byte-level
+// regression (tag numbers, tdate timezone, integer form, map length) would
+// silently break verification. The mocked buildMso.test.ts cannot catch these.
 import { buildMso, type MsoInput } from "./buildMso.js";
 
 /**
@@ -17,28 +21,47 @@ function hexToBytes(hex: string): Uint8Array {
 }
 
 /**
- * Minimal, easily hand-verifiable inputs. Short namespace/docType/uri strings
- * keep the expected bytes readable and traceable to CBOR diagnostic notation.
+ * Realistic MSO fixture: full COSE_Key (kty/crv/x/y), keyAuthorizations,
+ * 32-byte SHA-256-sized digests, and real docType/status URI. Deterministic
+ * dates so the tdate bytes are stable.
  */
 function makeMsoInput(overrides?: Partial<MsoInput>): MsoInput {
+  const coseKey = new Map<number, number | Uint8Array>([
+    [1, 2], // kty: EC2
+    [-1, 1], // crv: P-256
+    [-2, new Uint8Array(32).fill(0x01)], // x
+    [-3, new Uint8Array(32).fill(0x02)], // y
+  ]);
+  const keyAuthorizations = new Map<string, string[]>([
+    ["nameSpaces", ["org.iso.18013.5.1"]],
+  ]);
   const deviceKeyInfo: DeviceKeyInfo = new Map();
-  // COSE_Key {1: 2} — minimal, enough to prove deviceKeyInfo is embedded as-is.
-  deviceKeyInfo.set("deviceKey", new Map<number, number>([[1, 2]]));
+  deviceKeyInfo.set("deviceKey", coseKey);
+  deviceKeyInfo.set("keyAuthorizations", keyAuthorizations);
 
   const valueDigests = new Map<string, Map<number, Uint8Array>>([
-    ["ns", new Map<number, Uint8Array>([[0, new Uint8Array(2).fill(0xaa)]])],
+    [
+      "org.iso.18013.5.1",
+      new Map<number, Uint8Array>([
+        [0, new Uint8Array(32).fill(0xaa)],
+        [1, new Uint8Array(32).fill(0xbb)],
+      ]),
+    ],
   ]);
 
   const validityInfo: ValidityInfo = {
-    signed: new Date("2024-01-15T12:00:00Z"),
-    validFrom: new Date("2024-01-15T12:00:00Z"),
-    validUntil: new Date("2025-01-15T12:00:00Z"),
+    signed: new Date("2026-07-01T12:00:00Z"),
+    validFrom: new Date("2026-07-01T12:00:00Z"),
+    validUntil: new Date("2027-07-01T12:00:00Z"),
   };
 
-  const statusList: StatusList = { idx: 5, uri: "u" };
+  const statusList: StatusList = {
+    idx: 42,
+    uri: "https://example.com/status/1",
+  };
 
   return {
-    docType: "d",
+    docType: "org.iso.18013.5.1.mDL",
     valueDigests,
     deviceKeyInfo,
     validityInfo,
@@ -51,33 +74,36 @@ describe("buildMso byte-level encoding", () => {
   it("produces spec-correct tag-24-wrapped bytes without expectedUpdate", () => {
     const result = buildMso(makeMsoInput());
 
-    // Diagnostic notation (see docs/cbor-test-guide.md, verified via cbor.me):
+    // Diagnostic notation (verified via cbor.me and the real cbor2 encoder):
     // 24(<<{
     //   "version": "1.0",
     //   "digestAlgorithm": "SHA-256",
-    //   "valueDigests": {"ns": {0: h'AAAA'}},
-    //   "deviceKeyInfo": {"deviceKey": {1: 2}},
-    //   "validityInfo": {
-    //     "signed":     0("2024-01-15T12:00:00Z"),
-    //     "validFrom":  0("2024-01-15T12:00:00Z"),
-    //     "validUntil": 0("2025-01-15T12:00:00Z")
+    //   "valueDigests": {"org.iso.18013.5.1": {0: h'AA*32', 1: h'BB*32'}},
+    //   "deviceKeyInfo": {
+    //     "deviceKey": {1: 2, -1: 1, -2: h'01*32', -3: h'02*32'},
+    //     "keyAuthorizations": {"nameSpaces": ["org.iso.18013.5.1"]}
     //   },
-    //   "status": {"status_list": {"idx": 5, "uri": "u"}},
-    //   "docType": "d"
+    //   "validityInfo": {
+    //     "signed":     0("2026-07-01T12:00:00Z"),
+    //     "validFrom":  0("2026-07-01T12:00:00Z"),
+    //     "validUntil": 0("2027-07-01T12:00:00Z")
+    //   },
+    //   "status": {"status_list": {"idx": 42, "uri": "https://example.com/status/1"}},
+    //   "docType": "org.iso.18013.5.1.mDL"
     // }>>)
+    //
+    // Guards baked into these bytes:
+    //   D8 18       -> tag(24) wrapper (RFC 8949 §3.4.5.1)
+    //   59 01E8     -> bstr(488) definite-length payload
+    //   A7          -> map(7) definite-length top-level map
+    //   00 / 01     -> digestIDs as shortest-form unsigned ints
+    //   18 2A       -> idx 42 as shortest-form unsigned int
+    //   20          -> COSE_Key -1 as shortest-form negative int
+    //   C0 74 ...5A -> each tdate is tag(0) + text(20) ending in "Z" (5A), no offset
     const expected = hexToBytes(
-      "d8 18 58 ed" + // tag(24), bstr(237) — tag-24 wrapper + definite-length bstr
-        "a7" + // map(7) — definite-length, 7 entries
-        "67 76657273696f6e 63 312e30" + // "version": "1.0"
-        "6f 646967657374416c676f726974686d 67 5348412d323536" + // "digestAlgorithm": "SHA-256"
-        "6c 76616c756544696765737473 a1 62 6e73 a1 00 42 aaaa" + // valueDigests: {"ns":{0:h'AAAA'}} — 00 = shortest-form uint(0)
-        "6d 6465766963654b6579496e666f a1 69 6465766963654b6579 a1 01 02" + // deviceKeyInfo: {"deviceKey":{1:2}}
-        "6c 76616c6964697479496e666f a3" + // "validityInfo": map(3) — no expectedUpdate
-        "66 7369676e6564 c0 74 323032342d30312d31355431323a30303a30305a" + // "signed": tag(0) "2024-01-15T12:00:00Z" (Z, no offset)
-        "69 76616c696446726f6d c0 74 323032342d30312d31355431323a30303a30305a" + // "validFrom": tag(0) ...Z
-        "6a 76616c6964556e74696c c0 74 323032352d30312d31355431323a30303a30305a" + // "validUntil": tag(0) ...Z
-        "66 737461747573 a1 6b 7374617475735f6c697374 a2 63 696478 05 63 757269 61 75" + // status: {"status_list":{"idx":5,"uri":"u"}} — 05 = shortest-form uint(5)
-        "67 646f6354797065 61 64", // "docType": "d"
+      "D818" +
+        "5901E8" +
+        "A76776657273696F6E63312E306F646967657374416C676F726974686D675348412D3235366C76616C756544696765737473A1716F72672E69736F2E31383031332E352E31A2005820AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA015820BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB6D6465766963654B6579496E666FA2696465766963654B6579A40102200121582001010101010101010101010101010101010101010101010101010101010101012258200202020202020202020202020202020202020202020202020202020202020202716B6579417574686F72697A6174696F6E73A16A6E616D6553706163657381716F72672E69736F2E31383031332E352E316C76616C6964697479496E666FA3667369676E6564C074323032362D30372D30315431323A30303A30305A6976616C696446726F6DC074323032362D30372D30315431323A30303A30305A6A76616C6964556E74696CC074323032372D30372D30315431323A30303A30305A66737461747573A16B7374617475735F6C697374A263696478182A63757269781C68747470733A2F2F6578616D706C652E636F6D2F7374617475732F3167646F6354797065756F72672E69736F2E31383031332E352E312E6D444C",
     );
 
     expect(result).toEqual(expected);
@@ -87,30 +113,21 @@ describe("buildMso byte-level encoding", () => {
     const result = buildMso(
       makeMsoInput({
         validityInfo: {
-          signed: new Date("2024-01-15T12:00:00Z"),
-          validFrom: new Date("2024-01-15T12:00:00Z"),
-          validUntil: new Date("2025-01-15T12:00:00Z"),
-          expectedUpdate: new Date("2024-07-15T12:00:00Z"),
+          signed: new Date("2026-07-01T12:00:00Z"),
+          validFrom: new Date("2026-07-01T12:00:00Z"),
+          validUntil: new Date("2027-07-01T12:00:00Z"),
+          expectedUpdate: new Date("2026-10-01T12:00:00Z"),
         },
       }),
     );
 
-    // Same structure as above, but validityInfo is map(4) with a 4th entry:
-    //   "expectedUpdate": 0("2024-07-15T12:00:00Z")
+    // Same fixture with a 4th validityInfo entry:
+    //   "expectedUpdate": 0("2026-10-01T12:00:00Z")
+    // validityInfo becomes A4 (map(4)); the wrapper grows to bstr(525) -> 59 020D.
     const expected = hexToBytes(
-      "d8 18 59 0112" + // tag(24), bstr(274) — 2-byte length now that map grew
-        "a7" + // map(7)
-        "67 76657273696f6e 63 312e30" + // "version": "1.0"
-        "6f 646967657374416c676f726974686d 67 5348412d323536" + // "digestAlgorithm": "SHA-256"
-        "6c 76616c756544696765737473 a1 62 6e73 a1 00 42 aaaa" + // valueDigests
-        "6d 6465766963654b6579496e666f a1 69 6465766963654b6579 a1 01 02" + // deviceKeyInfo
-        "6c 76616c6964697479496e666f a4" + // "validityInfo": map(4)
-        "66 7369676e6564 c0 74 323032342d30312d31355431323a30303a30305a" + // "signed"
-        "69 76616c696446726f6d c0 74 323032342d30312d31355431323a30303a30305a" + // "validFrom"
-        "6a 76616c6964556e74696c c0 74 323032352d30312d31355431323a30303a30305a" + // "validUntil"
-        "6e 6578706563746564557064617465 c0 74 323032342d30372d31355431323a30303a30305a" + // "expectedUpdate": tag(0) ...Z
-        "66 737461747573 a1 6b 7374617475735f6c697374 a2 63 696478 05 63 757269 61 75" + // status
-        "67 646f6354797065 61 64", // "docType": "d"
+      "D818" +
+        "59020D" +
+        "A76776657273696F6E63312E306F646967657374416C676F726974686D675348412D3235366C76616C756544696765737473A1716F72672E69736F2E31383031332E352E31A2005820AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA015820BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB6D6465766963654B6579496E666FA2696465766963654B6579A40102200121582001010101010101010101010101010101010101010101010101010101010101012258200202020202020202020202020202020202020202020202020202020202020202716B6579417574686F72697A6174696F6E73A16A6E616D6553706163657381716F72672E69736F2E31383031332E352E316C76616C6964697479496E666FA4667369676E6564C074323032362D30372D30315431323A30303A30305A6976616C696446726F6DC074323032362D30372D30315431323A30303A30305A6A76616C6964556E74696CC074323032372D30372D30315431323A30303A30305A6E6578706563746564557064617465C074323032362D31302D30315431323A30303A30305A66737461747573A16B7374617475735F6C697374A263696478182A63757269781C68747470733A2F2F6578616D706C652E636F6D2F7374617475732F3167646F6354797065756F72672E69736F2E31383031332E352E312E6D444C",
     );
 
     expect(result).toEqual(expected);
@@ -119,11 +136,9 @@ describe("buildMso byte-level encoding", () => {
   it("emits Z (not a numeric offset) for tdate values", () => {
     const result = buildMso(makeMsoInput());
 
-    // "Z" is 0x5a; a numeric offset would introduce '+'/'-' (0x2b/0x2d)
-    // and a ':' inside the offset. Assert the UTC designator is present and
-    // no offset sign bytes leak in.
     const text = new TextDecoder().decode(result);
-    expect(text).toContain("2024-01-15T12:00:00Z");
+    expect(text).toContain("2026-07-01T12:00:00Z");
+    // A numeric offset (e.g. +01:00) would introduce a sign after the seconds.
     expect(text).not.toMatch(/\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}/);
   });
 
