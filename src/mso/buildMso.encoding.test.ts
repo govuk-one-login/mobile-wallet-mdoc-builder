@@ -4,9 +4,6 @@ import type { ValidityInfo } from "../validityInfo";
 import type { StatusList } from "../types";
 import { buildMso, type MsoInput } from "./buildMso.js";
 
-/**
- * Helper to convert a hex string to a Uint8Array.
- */
 function hexToBytes(hex: string): Uint8Array {
   const clean = hex.replace(/\s+/g, "");
   const bytes = new Uint8Array(clean.length / 2);
@@ -16,11 +13,6 @@ function hexToBytes(hex: string): Uint8Array {
   return bytes;
 }
 
-/**
- * Realistic MSO fixture: full COSE_Key (kty/crv/x/y), keyAuthorizations,
- * 32-byte SHA-256-sized digests, and real docType/status URI. Deterministic
- * dates so the tdate bytes are stable.
- */
 function makeMsoInput(overrides?: Partial<MsoInput>): MsoInput {
   const coseKey = new Map<number, number | Uint8Array>([
     [1, 2], // kty: EC2
@@ -70,7 +62,7 @@ describe("buildMso byte-level encoding", () => {
   it("produces spec-correct tag-24-wrapped bytes without expectedUpdate", () => {
     const result = buildMso(makeMsoInput());
 
-    // Diagnostic notation (verified via cbor.me and the real cbor2 encoder):
+    // Expected bytes were generated from cbor.me using the following diagnostic notation:
     // 24(<<{
     //   "version": "1.0",
     //   "digestAlgorithm": "SHA-256",
@@ -87,15 +79,6 @@ describe("buildMso byte-level encoding", () => {
     //   "status": {"status_list": {"idx": 42, "uri": "https://example.com/status/1"}},
     //   "docType": "org.iso.18013.5.1.mDL"
     // }>>)
-    //
-    // Guards baked into these bytes:
-    //   D8 18       -> tag(24) wrapper (RFC 8949 §3.4.5.1)
-    //   59 01E8     -> bstr(488) definite-length payload
-    //   A7          -> map(7) definite-length top-level map
-    //   00 / 01     -> digestIDs as shortest-form unsigned ints
-    //   18 2A       -> idx 42 as shortest-form unsigned int
-    //   20          -> COSE_Key -1 as shortest-form negative int
-    //   C0 74 ...5A -> each tdate is tag(0) + text(20) ending in "Z" (5A), no offset
     const expected = hexToBytes(
       "D818" +
         "5901E8" +
