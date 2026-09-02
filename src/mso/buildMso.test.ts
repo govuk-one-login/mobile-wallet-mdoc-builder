@@ -91,30 +91,14 @@ describe("buildMso", () => {
       ]);
     });
 
-    it("sets version to '1.0'", () => {
-      const input = makeMsoInput();
-
-      buildMso(input);
-
-      const encodedMap = mockEncode.mock.calls[0]?.[0] as Map<string, unknown>;
-      expect(encodedMap.get("version")).toBe("1.0");
-    });
-
-    it("sets digestAlgorithm to 'SHA-256'", () => {
-      const input = makeMsoInput();
-
-      buildMso(input);
-
-      const encodedMap = mockEncode.mock.calls[0]?.[0] as Map<string, unknown>;
-      expect(encodedMap.get("digestAlgorithm")).toBe("SHA-256");
-    });
-
-    it("passes docType from input unchanged", () => {
+    it("sets version and digestAlgorithm to fixed values and passes docType from input unchanged", () => {
       const input = makeMsoInput({ docType: "org.iso.18013.5.1.mDL" });
 
       buildMso(input);
 
       const encodedMap = mockEncode.mock.calls[0]?.[0] as Map<string, unknown>;
+      expect(encodedMap.get("version")).toBe("1.0");
+      expect(encodedMap.get("digestAlgorithm")).toBe("SHA-256");
       expect(encodedMap.get("docType")).toBe("org.iso.18013.5.1.mDL");
     });
   });
