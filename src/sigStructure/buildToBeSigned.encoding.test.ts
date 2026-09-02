@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-// Real cbor encoder used — do NOT mock src/cbor
+// Real cbor encoder used
 import { buildToBeSigned } from "./buildToBeSigned.js";
 
 /**
