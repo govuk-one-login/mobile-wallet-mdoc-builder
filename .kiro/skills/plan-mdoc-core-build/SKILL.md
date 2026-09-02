@@ -22,12 +22,11 @@ You are producing an implementation approach document for a ticket in the mobile
 Before planning, read the following to understand the project:
 
 1. **Project conventions** — read `AGENTS.md` and `README.md` in the repository root.
-2. **Architecture** — read `docs/component-architecture.md`.
-3. **CBOR test guide** — read `docs/cbor-test-guide.md`.
-4. **Existing source** — explore `src/` to understand the current module structure, patterns, and what has been implemented.
-5. **Git history** — run `git log --oneline -40` to understand what work has been completed. Only read commit titles.
-6. **Core build structure** — if `context/core_build_structure.md` exists, read it to understand the full work package and how this ticket fits within it.
-7. **Type definitions** — read `src/types/` to understand the public API contract.
+2. **Documentation** — read every file in the `docs/` folder to understand the project's architecture, testing guides, and any other reference material.
+3. **Existing source** — explore `src/` to understand the current module structure, patterns, and what has been implemented.
+4. **Git history** — run `git log --oneline -40` to understand what work has been completed. Only read commit titles.
+5. **Core build structure** — if `context/core_build_structure.md` exists, read it to understand the full work package and how this ticket fits within it.
+6. **Type definitions** — read `src/types/` to understand the public API contract.
 
 ### Step 2: Analyse the Ticket
 
@@ -45,7 +44,7 @@ Interview the user relentlessly about every aspect of the plan until a shared un
 
 For every open question:
 
-1. **Explore first.** Check whether the ticket, `AGENTS.md`, `docs/component-architecture.md`, `docs/cbor-test-guide.md`, `context/core_build_structure.md`, or the existing patterns in `src/` (especially `src/cbor/`, `src/deviceKey/`, `src/validityInfo/`, `src/issuerSigned/`) already answer it.
+1. **Explore first.** Check whether the ticket, `AGENTS.md`, the files in `docs/`, `context/core_build_structure.md`, or the existing patterns in `src/` (especially `src/cbor/`, `src/deviceKey/`, `src/validityInfo/`, `src/issuerSigned/`) already answer it.
 2. **Only ask if unresolved.** If exploration settles the question, state the answer and its source (e.g. "per `src/deviceKey/`, errors are thrown as `ValidationError`, not returned as a `Result`") instead of asking the user to confirm something already established.
 3. **Recommend, don't just ask.** For each question actually put to the user, provide a recommended answer based on the ticket, project conventions, and codebase patterns, so the user is confirming or correcting rather than starting from a blank page.
 
