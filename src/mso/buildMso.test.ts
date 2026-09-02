@@ -12,13 +12,6 @@ vi.mock("../cbor/index.js", () => ({
   encode: (value: unknown) => mockEncode(value),
   embeddedCbor: (bytes: Uint8Array) => mockEmbeddedCbor(bytes),
   tdate: (date: Date) => mockTdate(date),
-  fullDate: vi.fn(),
-  TaggedValue: class TaggedValue {
-    constructor(
-      public tagNumber: number,
-      public contents: unknown,
-    ) {}
-  },
 }));
 
 const { buildMso } = await import("./buildMso.js");
