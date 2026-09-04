@@ -1,4 +1,4 @@
-import { MdocBuilderError } from "../types/mdocBuilderError.js";
+import { MdocBuilderError } from "../types";
 
 // COSE identifiers — see https://www.iana.org/assignments/cose/cose.xhtml
 const COSE_HEADER_X5CHAIN = 33; // x5chain header label
