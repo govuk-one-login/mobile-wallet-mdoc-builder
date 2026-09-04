@@ -26,13 +26,13 @@ describe("buildToBeSigned", () => {
     expect(result).toBe(encoded);
   });
 
-  it("encodes exactly one value", () => {
+  it("calls encode once", () => {
     buildToBeSigned(protectedHeader, payload);
 
     expect(mockEncode).toHaveBeenCalledTimes(1);
   });
 
-  it("encodes a four-element Sig_Structure array", () => {
+  it("passes a four-element Sig_Structure array to encode", () => {
     buildToBeSigned(protectedHeader, payload);
 
     const arg = mockEncode.mock.calls[0]?.[0];
