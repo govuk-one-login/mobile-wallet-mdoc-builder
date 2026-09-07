@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { DataElement, NameSpaces } from "../types";
 import { DateFormat } from "../types";
+import { hexToBytes } from "../test-helpers/hexToBytes.js";
 
 // Mock node:crypto with seeded randomness — do NOT mock src/cbor (real encoder used)
 vi.mock("node:crypto", () => {
@@ -24,18 +25,6 @@ function makeNameSpaces(entries: [string, DataElement[]][]): NameSpaces {
   return new Map(entries);
 }
 
-/**
- * Helper to convert a hex string to a Uint8Array.
- */
-function hexToBytes(hex: string): Uint8Array {
-  const clean = hex.replace(/\s+/g, "");
-  const bytes = new Uint8Array(clean.length / 2);
-  for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(clean.slice(i * 2, i * 2 + 2), 16);
-  }
-  return bytes;
-}
-
 describe("issuerSignedItem byte-level smoke tests", () => {
   it("produces spec-correct bytes for a string element value", async () => {
     // Input: single element with string value "Smith"
@@ -54,16 +43,16 @@ describe("issuerSignedItem byte-level smoke tests", () => {
     // = D8 18 58 55 A4 68 "digestID" 18 2A 66 "random" 50 <16×AA>
     //   71 "elementIdentifier" 6B "family_name" 6C "elementValue" 65 "Smith"
     const expectedTag24Bytes = hexToBytes(
-      "D8 18 58 55" +
+      "D8185855" +
         "A4" +
-        "68 6469676573744944" +
-        "18 2A" +
-        "66 72616E646F6D" +
-        "50 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
-        "71 656C656D656E744964656E746966696572" +
-        "6B 66616D696C795F6E616D65" +
-        "6C 656C656D656E7456616C7565" +
-        "65 536D697468",
+        "686469676573744944" +
+        "182A" +
+        "6672616E646F6D" +
+        "50AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "71656C656D656E744964656E746966696572" +
+        "6B66616D696C795F6E616D65" +
+        "6C656C656D656E7456616C7565" +
+        "65536D697468",
     );
 
     const items = result.issuerSignedItemBytes.get("org.iso.18013.5.1");
@@ -106,17 +95,17 @@ describe("issuerSignedItem byte-level smoke tests", () => {
     //       "elementIdentifier": "birth_date", "elementValue": 1004("1990-01-15")}>>)
     // Total: 96 bytes (D8 18 58 5C + 92 inner bytes)
     const expectedTag24Bytes = hexToBytes(
-      "D8 18 58 5C" +
+      "D818585C" +
         "A4" +
-        "68 6469676573744944" +
-        "18 2A" +
-        "66 72616E646F6D" +
-        "50 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
-        "71 656C656D656E744964656E746966696572" +
-        "6A 62697274685F64617465" +
-        "6C 656C656D656E7456616C7565" +
-        "D9 03EC" +
-        "6A 313939302D30312D3135",
+        "686469676573744944" +
+        "182A" +
+        "6672616E646F6D" +
+        "50AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "71656C656D656E744964656E746966696572" +
+        "6A62697274685F64617465" +
+        "6C656C656D656E7456616C7565" +
+        "D903EC" +
+        "6A313939302D30312D3135",
     );
 
     const items = result.issuerSignedItemBytes.get("org.iso.18013.5.1");
@@ -146,17 +135,17 @@ describe("issuerSignedItem byte-level smoke tests", () => {
     //       "elementIdentifier": "issue_date", "elementValue": 0("2024-03-01T00:00:00Z")}>>)
     // Total: 104 bytes (D8 18 58 64 + 100 inner bytes)
     const expectedTag24Bytes = hexToBytes(
-      "D8 18 58 64" +
+      "D8185864" +
         "A4" +
-        "68 6469676573744944" +
-        "18 2A" +
-        "66 72616E646F6D" +
-        "50 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
-        "71 656C656D656E744964656E746966696572" +
-        "6A 69737375655F64617465" +
-        "6C 656C656D656E7456616C7565" +
+        "686469676573744944" +
+        "182A" +
+        "6672616E646F6D" +
+        "50AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+        "71656C656D656E744964656E746966696572" +
+        "6A69737375655F64617465" +
+        "6C656C656D656E7456616C7565" +
         "C0" +
-        "74 323032342D30332D30315430303A30303A30305A",
+        "74323032342D30332D30315430303A30303A30305A",
     );
 
     const items = result.issuerSignedItemBytes.get("org.iso.18013.5.1");
