@@ -58,34 +58,37 @@ by Zod's built-in validators and are not custom text.
 
 A non-empty string identifying the document type (e.g. `"org.iso.18013.5.1.mDL"`).
 
-| Constraint | Rule            | Limit                                            | Error message   |
-| ---------- | --------------- | ------------------------------------------------ | --------------- |
-| Type       | Must be string  | —                                                | _(Zod default)_ |
-| Min length | ≥ 1 (non-empty) | `VALIDATION_LIMITS.documentType.minLength` = 1   | _(Zod default)_ |
-| Max length | ≤ 128           | `VALIDATION_LIMITS.documentType.maxLength` = 128 | _(Zod default)_ |
+| Constraint    | Rule                          | Limit                                            | Error message                                          |
+| ------------- | ----------------------------- | ------------------------------------------------ | ------------------------------------------------------ |
+| Type          | Must be string                | —                                                | _(Zod default)_                                        |
+| Min length    | ≥ 1 (non-empty)               | `VALIDATION_LIMITS.documentType.minLength` = 1   | _(Zod default)_                                        |
+| Max length    | ≤ 128                         | `VALIDATION_LIMITS.documentType.maxLength` = 128 | _(Zod default)_                                        |
+| Character set | Latin-1 (ISO/IEC 8859-1) only | —                                                | `must contain only Latin1 (ISO/IEC 8859-1) characters` |
 
 ### nameSpaces
 
 A `Map<string, DataElement[]>` of namespace identifiers to their data elements.
 
-| Constraint         | Rule                         | Limit                                                       | Error message       |
-| ------------------ | ---------------------------- | ----------------------------------------------------------- | ------------------- |
-| Map non-empty      | Must contain ≥ 1 namespace   | —                                                           | `must not be empty` |
-| Namespace key      | Non-empty string             | `VALIDATION_LIMITS.nameSpaces.namespaceKey.minLength` = 1   | _(Zod default)_     |
-| Namespace key      | Max length ≤ 256             | `VALIDATION_LIMITS.nameSpaces.namespaceKey.maxLength` = 256 | _(Zod default)_     |
-| Data-element count | ≥ 1 element per namespace    | `VALIDATION_LIMITS.nameSpaces.minDataElements` = 1          | _(Zod default)_     |
-| Data-element count | ≤ 256 elements per namespace | `VALIDATION_LIMITS.nameSpaces.maxDataElements` = 256        | _(Zod default)_     |
+| Constraint         | Rule                          | Limit                                                       | Error message                                          |
+| ------------------ | ----------------------------- | ----------------------------------------------------------- | ------------------------------------------------------ |
+| Map non-empty      | Must contain ≥ 1 namespace    | —                                                           | `must not be empty`                                    |
+| Namespace key      | Non-empty string              | `VALIDATION_LIMITS.nameSpaces.namespaceKey.minLength` = 1   | _(Zod default)_                                        |
+| Namespace key      | Max length ≤ 256              | `VALIDATION_LIMITS.nameSpaces.namespaceKey.maxLength` = 256 | _(Zod default)_                                        |
+| Namespace key      | Latin-1 (ISO/IEC 8859-1) only | —                                                           | `must contain only Latin1 (ISO/IEC 8859-1) characters` |
+| Data-element count | ≥ 1 element per namespace     | `VALIDATION_LIMITS.nameSpaces.minDataElements` = 1          | _(Zod default)_                                        |
+| Data-element count | ≤ 256 elements per namespace  | `VALIDATION_LIMITS.nameSpaces.maxDataElements` = 256        | _(Zod default)_                                        |
 
 Each entry in a namespace's array is a `DataElement` with `elementIdentifier`, `elementValue`, and
 an optional `dateFormat`.
 
 #### elementIdentifier
 
-| Constraint | Rule            | Limit                                                            | Error message   |
-| ---------- | --------------- | ---------------------------------------------------------------- | --------------- |
-| Type       | Must be string  | —                                                                | _(Zod default)_ |
-| Min length | ≥ 1 (non-empty) | `VALIDATION_LIMITS.nameSpaces.elementIdentifier.minLength` = 1   | _(Zod default)_ |
-| Max length | ≤ 256           | `VALIDATION_LIMITS.nameSpaces.elementIdentifier.maxLength` = 256 | _(Zod default)_ |
+| Constraint    | Rule                          | Limit                                                            | Error message                                          |
+| ------------- | ----------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------ |
+| Type          | Must be string                | —                                                                | _(Zod default)_                                        |
+| Min length    | ≥ 1 (non-empty)               | `VALIDATION_LIMITS.nameSpaces.elementIdentifier.minLength` = 1   | _(Zod default)_                                        |
+| Max length    | ≤ 256                         | `VALIDATION_LIMITS.nameSpaces.elementIdentifier.maxLength` = 256 | _(Zod default)_                                        |
+| Character set | Latin-1 (ISO/IEC 8859-1) only | —                                                                | `must contain only Latin1 (ISO/IEC 8859-1) characters` |
 
 #### elementValue
 
@@ -93,18 +96,24 @@ an optional `dateFormat`.
 `Map<string, primitive>`, or an array of such maps. The permitted primitive types are `string`,
 `number`, `boolean`, `Date`, and `Uint8Array`.
 
+> **Latin-1 rule.** Every string in the input — string element values (including those inside
+> arrays, maps, and arrays of maps), map keys, `documentType`, `elementIdentifier`, and namespace
+> keys — must contain only Latin-1 characters (ISO/IEC 8859-1, Latin alphabet No. 1: code points
+> U+0000–U+00FF) (`src/validation/helpers/latin1.ts`).
+
 **Primitive scalars** (`src/validation/primitives.ts`):
 
-| Constraint     | Rule                        | Limit                                                               | Error message                   |
-| -------------- | --------------------------- | ------------------------------------------------------------------- | ------------------------------- |
-| string min     | ≥ 1 (non-empty)             | `VALIDATION_LIMITS.elementValue.string.minLength` = 1               | _(Zod default)_                 |
-| string max     | ≤ 150                       | `VALIDATION_LIMITS.elementValue.string.maxLength` = 150             | _(Zod default)_                 |
-| number min     | ≥ `Number.MIN_SAFE_INTEGER` | `VALIDATION_LIMITS.elementValue.number.min` = -9007199254740991     | _(Zod default)_                 |
-| number max     | ≤ `Number.MAX_SAFE_INTEGER` | `VALIDATION_LIMITS.elementValue.number.max` = 9007199254740991      | _(Zod default)_                 |
-| boolean        | Must be boolean             | —                                                                   | _(Zod default)_                 |
-| Date           | Must be a `Date`            | —                                                                   | _(Zod default)_                 |
-| Uint8Array min | ≥ 1 byte (non-empty)        | `VALIDATION_LIMITS.elementValue.uint8Array.minByteLength` = 1       | `must not be empty`             |
-| Uint8Array max | ≤ 1,572,864 bytes (1.5 MB)  | `VALIDATION_LIMITS.elementValue.uint8Array.maxByteLength` = 1572864 | `must not exceed 1572864 bytes` |
+| Constraint     | Rule                          | Limit                                                               | Error message                                          |
+| -------------- | ----------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------ |
+| string min     | ≥ 1 (non-empty)               | `VALIDATION_LIMITS.elementValue.string.minLength` = 1               | _(Zod default)_                                        |
+| string max     | ≤ 150                         | `VALIDATION_LIMITS.elementValue.string.maxLength` = 150             | _(Zod default)_                                        |
+| string charset | Latin-1 (ISO/IEC 8859-1) only | —                                                                   | `must contain only Latin1 (ISO/IEC 8859-1) characters` |
+| number min     | ≥ `Number.MIN_SAFE_INTEGER`   | `VALIDATION_LIMITS.elementValue.number.min` = -9007199254740991     | _(Zod default)_                                        |
+| number max     | ≤ `Number.MAX_SAFE_INTEGER`   | `VALIDATION_LIMITS.elementValue.number.max` = 9007199254740991      | _(Zod default)_                                        |
+| boolean        | Must be boolean               | —                                                                   | _(Zod default)_                                        |
+| Date           | Must be a `Date`              | —                                                                   | _(Zod default)_                                        |
+| Uint8Array min | ≥ 1 byte (non-empty)          | `VALIDATION_LIMITS.elementValue.uint8Array.minByteLength` = 1       | `must not be empty`                                    |
+| Uint8Array max | ≤ 1,572,864 bytes (1.5 MB)    | `VALIDATION_LIMITS.elementValue.uint8Array.maxByteLength` = 1572864 | `must not exceed 1572864 bytes`                        |
 
 > The `number` schema is `z.number().min(min).max(max)` only. `NaN` is rejected by `z.number()`
 > itself, and `Infinity` fails the `.max` bound — there is no separate NaN/Infinity refinement in
@@ -114,19 +123,20 @@ an optional `dateFormat`.
 non-empty and bounded, and must be **homogeneous** (see
 [Homogeneity and date-typing](#homogeneity-and-date-typing)):
 
-| Constraint                  | Rule                                       | Limit                                           | Error message                                |
-| --------------------------- | ------------------------------------------ | ----------------------------------------------- | -------------------------------------------- |
-| Primitive array min         | ≥ 1 (non-empty)                            | `VALIDATION_LIMITS.collections.minLength` = 1   | _(Zod default)_                              |
-| Primitive array max         | ≤ 256                                      | `VALIDATION_LIMITS.collections.maxLength` = 256 | _(Zod default)_                              |
-| Primitive array homogeneity | All values same primitive type             | —                                               | `all values must be the same primitive type` |
-| Map min size                | ≥ 1 entry (non-empty)                      | `VALIDATION_LIMITS.collections.minLength` = 1   | `must not be empty`                          |
-| Map max size                | ≤ 256 entries                              | `VALIDATION_LIMITS.collections.maxLength` = 256 | `must not exceed 256 entries`                |
-| Map homogeneity             | All values same primitive type             | —                                               | `all values must be the same primitive type` |
-| Array-of-maps min           | ≥ 1 map (non-empty)                        | `VALIDATION_LIMITS.collections.minLength` = 1   | _(Zod default)_                              |
-| Array-of-maps max           | ≤ 256 maps                                 | `VALIDATION_LIMITS.collections.maxLength` = 256 | _(Zod default)_                              |
-| Array-of-maps: each map     | Each map non-empty                         | `VALIDATION_LIMITS.collections.minLength` = 1   | `each map must not be empty`                 |
-| Array-of-maps: each map     | Each map ≤ 256 entries                     | `VALIDATION_LIMITS.collections.maxLength` = 256 | `each map must not exceed 256 entries`       |
-| Array-of-maps homogeneity   | Uniform primitive type across **all** maps | —                                               | `all values must be the same primitive type` |
+| Constraint                  | Rule                                       | Limit                                           | Error message                                          |
+| --------------------------- | ------------------------------------------ | ----------------------------------------------- | ------------------------------------------------------ |
+| Primitive array min         | ≥ 1 (non-empty)                            | `VALIDATION_LIMITS.collections.minLength` = 1   | _(Zod default)_                                        |
+| Primitive array max         | ≤ 256                                      | `VALIDATION_LIMITS.collections.maxLength` = 256 | _(Zod default)_                                        |
+| Primitive array homogeneity | All values same primitive type             | —                                               | `all values must be the same primitive type`           |
+| Map min size                | ≥ 1 entry (non-empty)                      | `VALIDATION_LIMITS.collections.minLength` = 1   | `must not be empty`                                    |
+| Map max size                | ≤ 256 entries                              | `VALIDATION_LIMITS.collections.maxLength` = 256 | `must not exceed 256 entries`                          |
+| Map homogeneity             | All values same primitive type             | —                                               | `all values must be the same primitive type`           |
+| Map key charset             | Latin-1 (ISO/IEC 8859-1) only              | —                                               | `must contain only Latin1 (ISO/IEC 8859-1) characters` |
+| Array-of-maps min           | ≥ 1 map (non-empty)                        | `VALIDATION_LIMITS.collections.minLength` = 1   | _(Zod default)_                                        |
+| Array-of-maps max           | ≤ 256 maps                                 | `VALIDATION_LIMITS.collections.maxLength` = 256 | _(Zod default)_                                        |
+| Array-of-maps: each map     | Each map non-empty                         | `VALIDATION_LIMITS.collections.minLength` = 1   | `each map must not be empty`                           |
+| Array-of-maps: each map     | Each map ≤ 256 entries                     | `VALIDATION_LIMITS.collections.maxLength` = 256 | `each map must not exceed 256 entries`                 |
+| Array-of-maps homogeneity   | Uniform primitive type across **all** maps | —                                               | `all values must be the same primitive type`           |
 
 #### dateFormat
 
@@ -222,20 +232,21 @@ permitted only when the value is date-typed, and forbidden otherwise.
 Some rules are enforced by native Zod validators; others are custom `.refine` / `.superRefine`
 checks with the messages quoted above.
 
-| Rule                                                                    | Kind                              |
-| ----------------------------------------------------------------------- | --------------------------------- |
-| string / number min–max                                                 | Native Zod                        |
-| identifier and namespace-key length                                     | Native Zod                        |
-| `z.boolean()`, `z.date()`, `z.instanceof(Uint8Array)`                   | Native Zod                        |
-| `z.url()` (uri), `.int()` / min / max on `idx`                          | Native Zod                        |
-| array `.min` / `.max` (element counts, chain, collections)              | Native Zod                        |
-| `z.enum(DateFormat)`                                                    | Native Zod                        |
-| `.strict()` unknown-key rejection (`unrecognized_keys`)                 | Native Zod                        |
-| Uint8Array byte-length bounds (device key, cert entries, element value) | Custom refinement                 |
-| Homogeneity (array, map, array-of-maps)                                 | Custom refinement                 |
-| Map size bounds (min/max entries)                                       | Custom refinement                 |
-| `dateFormat` cross-field rule                                           | Custom refinement (`superRefine`) |
-| `credentialValidity` cross-field rules                                  | Custom refinement (`superRefine`) |
+| Rule                                                                                                  | Kind                              |
+| ----------------------------------------------------------------------------------------------------- | --------------------------------- |
+| string / number min–max                                                                               | Native Zod                        |
+| identifier and namespace-key length                                                                   | Native Zod                        |
+| `z.boolean()`, `z.date()`, `z.instanceof(Uint8Array)`                                                 | Native Zod                        |
+| `z.url()` (uri), `.int()` / min / max on `idx`                                                        | Native Zod                        |
+| array `.min` / `.max` (element counts, chain, collections)                                            | Native Zod                        |
+| `z.enum(DateFormat)`                                                                                  | Native Zod                        |
+| `.strict()` unknown-key rejection (`unrecognized_keys`)                                               | Native Zod                        |
+| Uint8Array byte-length bounds (device key, cert entries, element value)                               | Custom refinement                 |
+| Latin-1 (ISO/IEC 8859-1) charset (string values, map keys, documentType, identifiers, namespace keys) | Custom refinement                 |
+| Homogeneity (array, map, array-of-maps)                                                               | Custom refinement                 |
+| Map size bounds (min/max entries)                                                                     | Custom refinement                 |
+| `dateFormat` cross-field rule                                                                         | Custom refinement (`superRefine`) |
+| `credentialValidity` cross-field rules                                                                | Custom refinement (`superRefine`) |
 
 > **NaN / Infinity note.** `numberValueSchema` is `z.number().min(min).max(max)` with no explicit
 > NaN/Infinity refinement. `NaN` is rejected by `z.number()` itself, and `Infinity` is rejected by
