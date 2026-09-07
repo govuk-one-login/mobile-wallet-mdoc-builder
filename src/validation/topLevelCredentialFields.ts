@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { VALIDATION_LIMITS } from "./constants.js";
+import { isLatin1, LATIN1_MESSAGE } from "./helpers/latin1.js";
 
 const { documentType, deviceKey, statusList, certificateChain } =
   VALIDATION_LIMITS;
@@ -18,7 +19,8 @@ function byteLengthSchema(minByteLength: number, maxByteLength: number) {
 export const documentTypeSchema = z
   .string()
   .min(documentType.minLength)
-  .max(documentType.maxLength);
+  .max(documentType.maxLength)
+  .refine(isLatin1, { message: LATIN1_MESSAGE });
 
 export const deviceKeySchema = byteLengthSchema(
   deviceKey.minByteLength,

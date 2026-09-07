@@ -31,6 +31,14 @@ describe("documentTypeSchema", () => {
   it("rejects a non-string", () => {
     expect(documentTypeSchema.safeParse(123).success).toBe(false);
   });
+
+  it("accepts a Latin-1 document type", () => {
+    expect(documentTypeSchema.safeParse("café").success).toBe(true);
+  });
+
+  it("rejects a document type with non-Latin-1 characters", () => {
+    expect(documentTypeSchema.safeParse("mDL😀").success).toBe(false);
+  });
 });
 
 describe("deviceKeySchema", () => {
