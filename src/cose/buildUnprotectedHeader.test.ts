@@ -23,8 +23,8 @@ describe("buildUnprotectedHeader", () => {
     expect(result.get(33)).toBe(cert0);
   });
 
-  it("throws MdocBuilderError when the certificate chain is empty", () => {
-    expect(() => buildUnprotectedHeader([])).toThrow(MdocBuilderError);
+  it("throws TypeError when the certificate chain is empty", () => {
+    expect(() => buildUnprotectedHeader([])).toThrow(TypeError);
     expect(() => buildUnprotectedHeader([])).toThrow(
       /certificate chain is empty/i,
     );

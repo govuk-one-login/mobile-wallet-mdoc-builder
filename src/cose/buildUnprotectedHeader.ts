@@ -8,8 +8,8 @@ export function buildUnprotectedHeader(
   // Only the leaf (signing) certificate is included - full chain support is out of scope for now.
   const [signingCertificate] = certificateChain;
   if (signingCertificate === undefined) {
-    throw new MdocBuilderError(
-      "buildUnprotectedHeader requires at least one certificate, but the certificate chain is empty",
+    throw new TypeError(
+        "buildUnprotectedHeader requires at least one certificate, but the certificate chain is empty",
     );
   }
 
