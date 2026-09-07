@@ -3,15 +3,7 @@ import type { DeviceKeyInfo } from "../deviceKey";
 import type { ValidityInfo } from "../validityInfo";
 import type { StatusList } from "../types";
 import { buildMso, type MsoInput } from "./buildMso.js";
-
-function hexToBytes(hex: string): Uint8Array {
-  const clean = hex.replace(/\s+/g, "");
-  const bytes = new Uint8Array(clean.length / 2);
-  for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(clean.slice(i * 2, i * 2 + 2), 16);
-  }
-  return bytes;
-}
+import { hexToBytes } from "../test-helpers/hexToBytes.js";
 
 function makeMsoInput(overrides?: Partial<MsoInput>): MsoInput {
   const coseKey = new Map<number, number | Uint8Array>([
