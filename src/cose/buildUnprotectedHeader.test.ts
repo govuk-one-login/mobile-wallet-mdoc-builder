@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { MdocBuilderError } from "../types";
 import { buildUnprotectedHeader } from "./buildUnprotectedHeader.js";
 
 describe("buildUnprotectedHeader", () => {
