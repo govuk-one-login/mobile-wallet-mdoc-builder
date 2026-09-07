@@ -56,6 +56,22 @@ describe("nameSpacesSchema — map structure", () => {
     const key = "a".repeat(namespaceKey.maxLength + 1);
     expect(accepts(nameSpaces([[key, [element()]]]))).toBe(false);
   });
+
+  it("accepts a Latin-1 namespace key", () => {
+    expect(accepts(nameSpaces([["café", [element()]]]))).toBe(true);
+  });
+
+  it("rejects a namespace key with non-Latin-1 characters", () => {
+    const result = nameSpacesSchema.safeParse(
+      nameSpaces([["名前", [element()]]]),
+    );
+    if (result.success) throw new Error("expected failure");
+
+    const messages = result.error.issues.map((issue) => issue.message);
+    expect(messages).toContain(
+      "must contain only Latin1 (ISO/IEC 8859-1) characters",
+    );
+  });
 });
 
 describe("nameSpacesSchema — data element arrays", () => {
@@ -86,6 +102,25 @@ describe("nameSpacesSchema — data element arrays", () => {
     expect(
       accepts(nameSpaces([["ns", [element({ elementIdentifier: id })]]])),
     ).toBe(false);
+  });
+
+  it("accepts a Latin-1 elementIdentifier", () => {
+    expect(
+      accepts(nameSpaces([["ns", [element({ elementIdentifier: "prénom" })]]])),
+    ).toBe(true);
+  });
+
+  it("rejects an elementIdentifier with non-Latin-1 characters", () => {
+    const result = nameSpacesSchema.safeParse(
+      nameSpaces([["ns", [element({ elementIdentifier: "名前" })]]]),
+    );
+    if (result.success) throw new Error("expected failure");
+
+    const errors = mapZodErrorToValidationErrors(result.error);
+    expect(errors).toContainEqual({
+      field: "ns[0].elementIdentifier",
+      message: "must contain only Latin1 (ISO/IEC 8859-1) characters",
+    });
   });
 
   it("rejects an invalid elementValue", () => {

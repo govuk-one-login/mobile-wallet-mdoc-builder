@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { VALIDATION_LIMITS } from "./constants.js";
 import { dataElementValueSchema } from "./dataElementValue.js";
+import { isLatin1, LATIN1_MESSAGE } from "./helpers/latin1.js";
 import { DateFormat } from "../types/index.js";
 
 const { namespaceKey, elementIdentifier, minDataElements, maxDataElements } =
@@ -23,14 +24,16 @@ function isDateTyped(value: unknown): boolean {
 const namespaceKeySchema = z
   .string()
   .min(namespaceKey.minLength)
-  .max(namespaceKey.maxLength);
+  .max(namespaceKey.maxLength)
+  .refine(isLatin1, { message: LATIN1_MESSAGE });
 
 const dataElementSchema = z
   .object({
     elementIdentifier: z
       .string()
       .min(elementIdentifier.minLength)
-      .max(elementIdentifier.maxLength),
+      .max(elementIdentifier.maxLength)
+      .refine(isLatin1, { message: LATIN1_MESSAGE }),
     elementValue: dataElementValueSchema,
     dateFormat: z.enum(DateFormat).optional(),
   })
