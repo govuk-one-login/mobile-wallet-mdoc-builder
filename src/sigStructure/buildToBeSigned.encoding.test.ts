@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 // Real cbor encoder used
 import { buildToBeSigned } from "./buildToBeSigned.js";
+import { hexToBytes } from "../test-helpers/hexToBytes.js";
 
 describe("buildToBeSigned byte-level smoke tests", () => {
   it("produces spec-correct Sig_Structure bytes (RFC 9052 §4.4)", () => {
     // protected header: {1: -7} (ES256) = h'A10126'
-    const protectedHeader = new Uint8Array(Buffer.from("A10126", "hex"));
+    const protectedHeader = hexToBytes("A10126");
     // tag 24 wrapped MSO bytes: 24(h'00') = h'D8184100'
-    const msoBytes = new Uint8Array(Buffer.from("D8184100", "hex"));
+    const msoBytes = hexToBytes("D8184100");
 
     const result = buildToBeSigned(protectedHeader, msoBytes);
 
@@ -18,9 +19,7 @@ describe("buildToBeSigned byte-level smoke tests", () => {
     //   43 A10126                bstr(3) protected header
     //   40                       bstr(0) empty external AAD
     //   44 D8184100              bstr(4) payload / MSO bytes
-    const expected = new Uint8Array(
-      Buffer.from("846A5369676E61747572653143A101264044D8184100", "hex"),
-    );
+    const expected = hexToBytes("846A5369676E61747572653143A101264044D8184100");
 
     expect(result).toEqual(expected);
   });
