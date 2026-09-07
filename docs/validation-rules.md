@@ -216,8 +216,6 @@ permitted only when the value is date-typed, and forbidden otherwise.
 
 - `src/validation/constants.ts` (the `VALIDATION_LIMITS` object) and the Zod schemas in
   `src/validation/` are the **authoritative** source of truth for all limits and messages.
-- `context/validation_rules.json` is the **agreed rule record** — useful for intent and wording, but
-  it is gitignored working notes and is **not** authoritative over the code.
 
 ### Native Zod vs custom refinements
 
