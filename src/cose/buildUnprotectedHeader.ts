@@ -7,7 +7,7 @@ export function buildUnprotectedHeader(
   const [signingCertificate] = certificateChain;
   if (signingCertificate === undefined) {
     throw new TypeError(
-        "buildUnprotectedHeader requires at least one certificate, but the certificate chain is empty",
+      "buildUnprotectedHeader requires at least one certificate, but the certificate chain is empty",
     );
   }
 
