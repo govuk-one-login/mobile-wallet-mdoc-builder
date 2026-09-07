@@ -116,4 +116,32 @@ describe("mdocBuilderInputSchema — deterministic clock", () => {
       "nameSpaces.org.iso.18013.5.1[0].elementIdentifier",
     );
   });
+
+  it("reports a Latin-1 violation on a string element value with the correct field path", () => {
+    const input = validInput();
+    input.nameSpaces = new Map([
+      [
+        "org.iso.18013.5.1",
+        [{ elementIdentifier: "family_name", elementValue: "名前" }],
+      ],
+    ]);
+
+    const errors = validate(input);
+    expect(errors).toContainEqual({
+      field: "nameSpaces.org.iso.18013.5.1[0].elementValue",
+      message: "must contain only Latin1 (ISO/IEC 8859-1) characters",
+    });
+  });
+
+  it("accepts an input whose string values use accented Latin-1 characters", () => {
+    const input = validInput();
+    input.nameSpaces = new Map([
+      [
+        "org.iso.18013.5.1",
+        [{ elementIdentifier: "family_name", elementValue: "Müller" }],
+      ],
+    ]);
+
+    expect(validate(input)).toEqual([]);
+  });
 });
