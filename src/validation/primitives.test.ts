@@ -28,6 +28,27 @@ describe("stringValueSchema", () => {
     );
     expect(stringValueSchema.safeParse(overMax).success).toBe(false);
   });
+
+  it("accepts an accented Latin-1 string", () => {
+    expect(stringValueSchema.safeParse("mañana").success).toBe(true);
+  });
+
+  it("rejects a string containing non-Latin-1 characters", () => {
+    expect(stringValueSchema.safeParse("€").success).toBe(false);
+  });
+
+  it("reports both length and Latin-1 issues for an over-length non-Latin-1 string", () => {
+    const overMax = "€".repeat(
+      VALIDATION_LIMITS.elementValue.string.maxLength + 1,
+    );
+    const result = stringValueSchema.safeParse(overMax);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const codes = result.error.issues.map((issue) => issue.code);
+      expect(codes).toContain("too_big");
+      expect(codes).toContain("custom");
+    }
+  });
 });
 
 describe("numberValueSchema", () => {

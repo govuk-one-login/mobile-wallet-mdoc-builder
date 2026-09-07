@@ -1,12 +1,14 @@
 import { z } from "zod";
 import { VALIDATION_LIMITS } from "./constants.js";
+import { isLatin1, LATIN1_MESSAGE } from "./helpers/latin1.js";
 
 const { string, number, uint8Array } = VALIDATION_LIMITS.elementValue;
 
 export const stringValueSchema = z
   .string()
   .min(string.minLength)
-  .max(string.maxLength);
+  .max(string.maxLength)
+  .refine(isLatin1, { message: LATIN1_MESSAGE });
 
 export const numberValueSchema = z.number().min(number.min).max(number.max);
 
