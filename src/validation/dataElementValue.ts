@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { VALIDATION_LIMITS } from "./constants.js";
+import { isLatin1, LATIN1_MESSAGE } from "./helpers/latin1.js";
 import {
   stringValueSchema,
   numberValueSchema,
@@ -9,6 +10,10 @@ import {
 } from "./primitives.js";
 
 const { minLength, maxLength } = VALIDATION_LIMITS.collections;
+
+const latin1KeySchema = z
+  .string()
+  .refine(isLatin1, { message: LATIN1_MESSAGE });
 
 const primitiveValueSchema = z.union([
   stringValueSchema,
@@ -47,7 +52,7 @@ const primitiveArraySchema = z
   .refine(isHomogeneous, { message: HOMOGENEITY_MESSAGE });
 
 const primitiveMapSchema = z
-  .map(z.string(), primitiveValueSchema)
+  .map(latin1KeySchema, primitiveValueSchema)
   .refine((map) => map.size >= minLength, { message: "must not be empty" })
   .refine((map) => map.size <= maxLength, {
     message: `must not exceed ${maxLength.toString()} entries`,
@@ -57,7 +62,7 @@ const primitiveMapSchema = z
   });
 
 const primitiveMapArraySchema = z
-  .array(z.map(z.string(), primitiveValueSchema))
+  .array(z.map(latin1KeySchema, primitiveValueSchema))
   .min(minLength)
   .max(maxLength)
   .refine((maps) => maps.every((map) => map.size >= minLength), {

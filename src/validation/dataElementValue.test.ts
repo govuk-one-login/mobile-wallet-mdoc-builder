@@ -114,6 +114,14 @@ describe("dataElementValueSchema — primitive maps", () => {
     expect(accepts(new Map<unknown, unknown>([[1, "x"]]))).toBe(false);
   });
 
+  it("accepts a map with a Latin-1 key", () => {
+    expect(accepts(new Map([["nom", "x"]]))).toBe(true);
+  });
+
+  it("rejects a map with a non-Latin-1 key", () => {
+    expect(accepts(new Map([["名前", "x"]]))).toBe(false);
+  });
+
   it("accepts a map at the maximum size", () => {
     const entries = Array.from(
       { length: maxLength },
@@ -155,6 +163,10 @@ describe("dataElementValueSchema — arrays of maps", () => {
 
   it("rejects an array containing a map with a non-string (numeric) key", () => {
     expect(accepts([new Map<unknown, unknown>([[1, "x"]])])).toBe(false);
+  });
+
+  it("rejects an array containing a map with a non-Latin-1 key", () => {
+    expect(accepts([new Map([["名前", "x"]])])).toBe(false);
   });
 
   it("rejects an array where maps have different primitive types", () => {
