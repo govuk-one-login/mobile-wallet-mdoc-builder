@@ -1,5 +1,3 @@
-import { MdocBuilderError } from "../types";
-
 const COSE_HEADER_X5CHAIN = 33; // x5chain header label
 
 export function buildUnprotectedHeader(
