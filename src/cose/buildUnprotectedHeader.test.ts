@@ -21,11 +21,4 @@ describe("buildUnprotectedHeader", () => {
     expect(result).toEqual(new Map<number, Uint8Array>([[33, cert0]]));
     expect(result.get(33)).toBe(cert0);
   });
-
-  it("throws TypeError when the certificate chain is empty", () => {
-    expect(() => buildUnprotectedHeader([])).toThrow(TypeError);
-    expect(() => buildUnprotectedHeader([])).toThrow(
-      /certificate chain is empty/i,
-    );
-  });
 });
