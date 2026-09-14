@@ -56,18 +56,14 @@
           "provider": "GitHub",
           "file": ".github/workflows/pull-request-checks.yaml",
           "path": "$.jobs.typecheck-lint-format",
-          "checks": [
-            {"name": "code style and linting"}
-          ]
+          "checks": [{ "name": "code style and linting" }]
         },
         {
           "phase": "pre-release",
           "provider": "GitHub",
           "file": ".github/workflows/push-to-main.yaml",
           "path": "$.jobs.conventional-commits",
-          "checks": [
-            {"name": "code style and linting"}
-          ]
+          "checks": [{ "name": "code style and linting" }]
         },
         {
           "phase": "pre-release",
@@ -90,9 +86,7 @@
           "path": "$.jobs.run-code-quality-and-security-analysis"
         },
         {
-          "checks": [
-            {"name": "code style and linting"}
-          ],
+          "checks": [{ "name": "code style and linting" }],
           "phase": "pre-release",
           "provider": "GitHub",
           "file": ".github/workflows/push-to-main.yaml",
