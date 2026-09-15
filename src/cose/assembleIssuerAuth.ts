@@ -1,9 +1,23 @@
 import { MdocBuilderError } from "../types";
 import type { SigningFunction } from "../types";
-import type { IssuerAuth } from "./issuerAuth.js";
 
 // ECDSA P-256 raw signatures are r||s, 32 bytes each.
 const EXPECTED_SIGNATURE_LENGTH = 64;
+
+/**
+ * The issuerAuth COSE_Sign1 structure (RFC 9052 §4.2, ISO 18013-5 §9.1.2):
+ * a four-element array of [protected header, unprotected header, payload
+ * (Tag 24 wrapped MSO bytes), signature].
+ *
+ * This is the plain JS representation; CBOR encoding happens later during
+ * IssuerSigned assembly.
+ */
+export type IssuerAuth = [
+  Uint8Array,
+  Map<number, Uint8Array>,
+  Uint8Array,
+  Uint8Array,
+];
 
 export async function assembleIssuerAuth(
   toBeSigned: Uint8Array,
