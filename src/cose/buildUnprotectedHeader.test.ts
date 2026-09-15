@@ -21,4 +21,9 @@ describe("buildUnprotectedHeader", () => {
     expect(result).toEqual(new Map<number, Uint8Array>([[33, cert0]]));
     expect(result.get(33)).toBe(cert0);
   });
+
+  it("rejects an empty certificate chain at compile time", () => {
+    // @ts-expect-error empty array is not assignable to a non-empty tuple
+    expect(() => buildUnprotectedHeader([])).toBeDefined();
+  });
 });

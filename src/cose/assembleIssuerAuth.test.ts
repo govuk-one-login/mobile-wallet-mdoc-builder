@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { assembleIssuerAuth } from "./assembleIssuerAuth.js";
 import type { SigningFunction } from "../types";
+import { MdocBuilderError } from "../types";
 
 describe("assembleIssuerAuth", () => {
   const toBeSigned = new Uint8Array([0x84, 0x6a, 0x53, 0x69]);
@@ -9,7 +10,7 @@ describe("assembleIssuerAuth", () => {
   const unprotectedHeader = new Map<number, Uint8Array>([
     [33, new Uint8Array([0x01, 0x02, 0x03])],
   ]);
-  const signature = new Uint8Array([0xde, 0xad, 0xbe, 0xef]);
+  const signature = new Uint8Array(64).fill(0xab);
 
   const makeSign = (): SigningFunction =>
     vi.fn<SigningFunction>().mockResolvedValue(signature);
@@ -108,9 +109,26 @@ describe("assembleIssuerAuth", () => {
     ]);
   });
 
-  it("propagates errors thrown by the signing function without catching them", async () => {
+  it("wraps errors thrown by the signing function in an MdocBuilderError with cause", async () => {
     const error = new Error("signing backend unavailable");
     const sign = vi.fn<SigningFunction>().mockRejectedValue(error);
+
+    const promise = assembleIssuerAuth(
+      toBeSigned,
+      protectedHeader,
+      msoBytes,
+      unprotectedHeader,
+      sign,
+    );
+
+    await expect(promise).rejects.toBeInstanceOf(MdocBuilderError);
+    await expect(promise).rejects.toMatchObject({ cause: error });
+  });
+
+  it("throws an MdocBuilderError when the signature is not a Uint8Array", async () => {
+    const sign = vi
+      .fn<SigningFunction>()
+      .mockResolvedValue("not-bytes" as unknown as Uint8Array);
 
     await expect(
       assembleIssuerAuth(
@@ -120,6 +138,22 @@ describe("assembleIssuerAuth", () => {
         unprotectedHeader,
         sign,
       ),
-    ).rejects.toBe(error);
+    ).rejects.toThrow(MdocBuilderError);
+  });
+
+  it("throws an MdocBuilderError when the signature is not 64 bytes", async () => {
+    const sign = vi
+      .fn<SigningFunction>()
+      .mockResolvedValue(new Uint8Array([0xde, 0xad, 0xbe, 0xef]));
+
+    await expect(
+      assembleIssuerAuth(
+        toBeSigned,
+        protectedHeader,
+        msoBytes,
+        unprotectedHeader,
+        sign,
+      ),
+    ).rejects.toThrow(MdocBuilderError);
   });
 });
