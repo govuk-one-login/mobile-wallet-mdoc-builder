@@ -7,14 +7,7 @@ import { buildToBeSigned } from "./buildToBeSigned.js";
 // ECDSA P-256 raw signatures are r||s, 32 bytes each.
 const EXPECTED_SIGNATURE_LENGTH = 64;
 
-/**
- * The issuerAuth COSE_Sign1 structure (RFC 9052 §4.2, ISO 18013-5 §9.1.2):
- * a four-element array of [protected header, unprotected header, payload
- * (Tag 24 wrapped MSO bytes), signature].
- *
- * This is the plain JS representation; CBOR encoding happens later during
- * IssuerSigned assembly.
- */
+// COSE_Sign1: [protectedHeader, unprotectedHeader, msoBytes (Tag 24), signature] — RFC 9052 §4.2, ISO 18013-5 §9.1.2
 export type IssuerAuth = [
   Uint8Array,
   Map<number, Uint8Array>,
@@ -22,22 +15,6 @@ export type IssuerAuth = [
   Uint8Array,
 ];
 
-/**
- * Assembles the issuerAuth COSE_Sign1 structure.
- *
- * Orchestrates the signing flow: builds the protected header (alg: ES256) and
- * unprotected header (x5chain), derives the Sig_Structure `toBeSigned` bytes
- * over the Tag 24 wrapped MSO payload, invokes the caller's signing function,
- * validates the returned signature, and returns the four-element
- * [protectedHeader, unprotectedHeader, msoBytes, signature] array.
- *
- * @param msoBytes - The Tag 24 wrapped MSO bytes used as the COSE payload.
- * @param certificateChain - The signing certificate chain (leaf first).
- * @param sign - The caller's signing function.
- * @returns The assembled issuerAuth structure.
- * @throws {MdocBuilderError} If the signing function throws or returns an
- *   invalid signature.
- */
 export async function assembleIssuerAuth(
   msoBytes: Uint8Array,
   certificateChain: [Uint8Array, ...Uint8Array[]],
