@@ -1,5 +1,8 @@
 import { MdocBuilderError } from "../types";
 import type { SigningFunction } from "../types";
+import { buildProtectedHeader } from "./buildProtectedHeader.js";
+import { buildUnprotectedHeader } from "./buildUnprotectedHeader.js";
+import { buildToBeSigned } from "./buildToBeSigned.js";
 
 // ECDSA P-256 raw signatures are r||s, 32 bytes each.
 const EXPECTED_SIGNATURE_LENGTH = 64;
@@ -19,13 +22,31 @@ export type IssuerAuth = [
   Uint8Array,
 ];
 
+/**
+ * Assembles the issuerAuth COSE_Sign1 structure.
+ *
+ * Orchestrates the signing flow: builds the protected header (alg: ES256) and
+ * unprotected header (x5chain), derives the Sig_Structure `toBeSigned` bytes
+ * over the Tag 24 wrapped MSO payload, invokes the caller's signing function,
+ * validates the returned signature, and returns the four-element
+ * [protectedHeader, unprotectedHeader, msoBytes, signature] array.
+ *
+ * @param msoBytes - The Tag 24 wrapped MSO bytes used as the COSE payload.
+ * @param certificateChain - The signing certificate chain (leaf first).
+ * @param sign - The caller's signing function.
+ * @returns The assembled issuerAuth structure.
+ * @throws {MdocBuilderError} If the signing function throws or returns an
+ *   invalid signature.
+ */
 export async function assembleIssuerAuth(
-  toBeSigned: Uint8Array,
-  protectedHeader: Uint8Array,
   msoBytes: Uint8Array,
-  unprotectedHeader: Map<number, Uint8Array>,
+  certificateChain: [Uint8Array, ...Uint8Array[]],
   sign: SigningFunction,
 ): Promise<IssuerAuth> {
+  const protectedHeader = buildProtectedHeader();
+  const unprotectedHeader = buildUnprotectedHeader(certificateChain);
+  const toBeSigned = buildToBeSigned(protectedHeader, msoBytes);
+
   let signature: Uint8Array;
   try {
     signature = await sign(toBeSigned);
