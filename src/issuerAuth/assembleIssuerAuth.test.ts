@@ -47,42 +47,21 @@ describe("assembleIssuerAuth", () => {
     mockBuildToBeSigned.mockReturnValue(toBeSigned);
   });
 
-  it("builds the protected header", async () => {
-    await assembleIssuerAuth(msoBytes, certificateChain, makeSign());
-
-    expect(mockBuildProtectedHeader).toHaveBeenCalledTimes(1);
-  });
-
-  it("builds the unprotected header from the certificate chain", async () => {
-    await assembleIssuerAuth(msoBytes, certificateChain, makeSign());
-
-    expect(mockBuildUnprotectedHeader).toHaveBeenCalledTimes(1);
-    expect(mockBuildUnprotectedHeader).toHaveBeenCalledWith(certificateChain);
-  });
-
-  it("builds toBeSigned from the protected header and the MSO bytes", async () => {
-    await assembleIssuerAuth(msoBytes, certificateChain, makeSign());
-
-    expect(mockBuildToBeSigned).toHaveBeenCalledTimes(1);
-    expect(mockBuildToBeSigned).toHaveBeenCalledWith(protectedHeader, msoBytes);
-  });
-
-  it("calls the signing function once with toBeSigned", async () => {
+  it("assembles IssuerAuth by calling helper functions and returning COSE_Sign1 array", async () => {
     const sign = makeSign();
 
-    await assembleIssuerAuth(msoBytes, certificateChain, sign);
+    const result = await assembleIssuerAuth(msoBytes, certificateChain, sign);
 
+    // Verify all helper functions are called correctly
+    expect(mockBuildProtectedHeader).toHaveBeenCalledTimes(1);
+    expect(mockBuildUnprotectedHeader).toHaveBeenCalledTimes(1);
+    expect(mockBuildUnprotectedHeader).toHaveBeenCalledWith(certificateChain);
+    expect(mockBuildToBeSigned).toHaveBeenCalledTimes(1);
+    expect(mockBuildToBeSigned).toHaveBeenCalledWith(protectedHeader, msoBytes);
     expect(sign).toHaveBeenCalledTimes(1);
     expect(sign).toHaveBeenCalledWith(toBeSigned);
-  });
 
-  it("returns the four-element COSE_Sign1 array [protectedHeader, unprotectedHeader, msoBytes, signature]", async () => {
-    const result = await assembleIssuerAuth(
-      msoBytes,
-      certificateChain,
-      makeSign(),
-    );
-
+    // Verify the returned COSE_Sign1 array
     expect(result).toHaveLength(4);
     expect(result[0]).toBe(protectedHeader);
     expect(result[1]).toBe(unprotectedHeader);
