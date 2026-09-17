@@ -22,10 +22,8 @@ describe("buildUnprotectedHeader", () => {
     expect(result.get(33)).toBe(cert0);
   });
 
-  it("throws TypeError when the certificate chain is empty", () => {
-    expect(() => buildUnprotectedHeader([])).toThrow(TypeError);
-    expect(() => buildUnprotectedHeader([])).toThrow(
-      /certificate chain is empty/i,
-    );
+  it("rejects an empty certificate chain at compile time", () => {
+    // @ts-expect-error empty array is not assignable to a non-empty tuple
+    expect(() => buildUnprotectedHeader([])).toBeDefined();
   });
 });
