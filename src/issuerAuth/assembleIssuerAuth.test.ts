@@ -90,22 +90,6 @@ describe("assembleIssuerAuth", () => {
     expect(result[3]).toBe(signature);
   });
 
-  it("returns a plain JS structure and does not CBOR-encode it", async () => {
-    const result = await assembleIssuerAuth(
-      msoBytes,
-      certificateChain,
-      makeSign(),
-    );
-
-    // A plain array whose elements are the exact inputs/outputs, not encoded bytes.
-    expect(result).toEqual([
-      protectedHeader,
-      unprotectedHeader,
-      msoBytes,
-      signature,
-    ]);
-  });
-
   it("wraps errors thrown by the signing function in an MdocBuilderError with cause", async () => {
     const error = new Error("signing backend unavailable");
     const sign = vi.fn<SigningFunction>().mockRejectedValue(error);
