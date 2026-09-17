@@ -4,7 +4,7 @@ export class MdocOutput implements Mdoc {
   private readonly bytes: Uint8Array;
 
   constructor(bytes: Uint8Array) {
-    this.bytes = bytes;
+    this.bytes = Uint8Array.from(bytes);
   }
 
   asBase64Url(): string {
@@ -16,6 +16,6 @@ export class MdocOutput implements Mdoc {
   }
 
   asBytes(): Uint8Array {
-    return this.bytes;
+    return Uint8Array.from(this.bytes);
   }
 }

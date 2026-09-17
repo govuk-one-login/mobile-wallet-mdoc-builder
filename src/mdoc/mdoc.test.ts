@@ -6,16 +6,34 @@ describe("MdocOutput", () => {
   const bytes = new Uint8Array([0x01, 0x02, 0x03, 0xff]);
 
   describe("asBytes", () => {
-    it("returns the bytes passed to the constructor", () => {
+    it("returns bytes equal to those passed to the constructor", () => {
       const mdoc = new MdocOutput(bytes);
 
-      expect(mdoc.asBytes()).toBe(bytes);
+      expect(mdoc.asBytes()).toEqual(bytes);
     });
 
     it("returns an empty Uint8Array for empty input", () => {
       const mdoc = new MdocOutput(new Uint8Array([]));
 
       expect(mdoc.asBytes()).toEqual(new Uint8Array([]));
+    });
+
+    it("is not affected by mutation of the source array after construction", () => {
+      const source = new Uint8Array([0x01, 0x02, 0x03, 0xff]);
+      const mdoc = new MdocOutput(source);
+
+      source[0] = 0x00;
+
+      expect(mdoc.asBytes()).toEqual(new Uint8Array([0x01, 0x02, 0x03, 0xff]));
+    });
+
+    it("is not affected by mutation of a previously returned array", () => {
+      const mdoc = new MdocOutput(bytes);
+
+      const returned = mdoc.asBytes();
+      returned[0] = 0x00;
+
+      expect(mdoc.asBytes()).toEqual(new Uint8Array([0x01, 0x02, 0x03, 0xff]));
     });
   });
 
