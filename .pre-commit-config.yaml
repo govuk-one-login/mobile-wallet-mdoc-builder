@@ -10,27 +10,27 @@ repos:
       - id: eslint
         name: eslint
         entry: npm run lint
-        language: node
+        language: unsupported
         pass_filenames: false
         stages: [pre-commit]
 
       - id: prettier
         name: prettier
         entry: npm run format:check
-        language: node
+        language: unsupported
         pass_filenames: false
         stages: [pre-commit]
 
       - id: typecheck
         name: typecheck
         entry: npm run typecheck
-        language: node
+        language: unsupported
         stages: [pre-commit]
         pass_filenames: false
 
       - id: test
         name: test
         entry: npm test
-        language: node
+        language: unsupported
         stages: [pre-push]
         pass_filenames: false
