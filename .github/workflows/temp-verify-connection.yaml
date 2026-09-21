@@ -1,0 +1,65 @@
+name: TEMP - Verify AWS + GitHub App connection
+
+# TEMPORARY: proves OIDC -> AWS Secrets Manager and GitHub App token minting from
+# a branch. Read-only: no bump, no tag, no publish. Delete before merging.
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - DCMAW-22669
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  verify-connection:
+    name: Verify AWS + App connection
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          role-to-assume: ${{ vars.AWS_RELEASE_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Confirm assumed AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Fetch App credentials from Secrets Manager
+        uses: aws-actions/aws-secretsmanager-get-secrets@2297f9a879480a9e3af9b293ed15c70caf8e1c88 # v3.0.2
+        with:
+          secret-ids: |
+            ,ci/release_action/mdoc_release_app_mdoc_builder
+          parse-json-secrets: true
+
+      - name: Confirm secret was fetched (values masked)
+        run: |
+          set -euo pipefail
+          if [ -n "${CLIENT_ID:-}" ] && [ -n "${PRIVATE_KEY:-}" ]; then
+            echo "Secret fetched: CLIENT_ID and PRIVATE_KEY are set (values masked)."
+          else
+            echo "::error::Expected CLIENT_ID and PRIVATE_KEY env vars from the secret."
+            exit 1
+          fi
+
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        with:
+          app-id: ${{ env.CLIENT_ID }}
+          private-key: ${{ env.PRIVATE_KEY }}
+
+      - name: Confirm App is installed on this repo
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+        run: |
+          set -euo pipefail
+          echo "Minted token for App slug: ${APP_SLUG}"
+          echo "Installation repositories visible to this token:"
+          gh api /installation/repositories --jq '.repositories[].full_name'
