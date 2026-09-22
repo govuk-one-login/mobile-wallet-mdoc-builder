@@ -25,5 +25,5 @@ export interface MdocBuilderInput {
    * Array of DER-encoded certificates. The library will use
    * certificateChain[0] as the document signing certificate.
    */
-  certificateChain: Uint8Array[];
+  certificateChain: [Uint8Array, ...Uint8Array[]];
 }
