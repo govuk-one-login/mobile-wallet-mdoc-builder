@@ -88,6 +88,6 @@ The pipeline depends on infrastructure and settings configured outside this repo
 - AWS Secrets Manager to hold the client id and private key of the github app
 - IAM role to allow GitHub actions in this repo to access the above secrets
 - The `npm-publish` environment with tag rules and approvers.
-- The npm Trusted Publisher that accepts a release from workflows on this repo.
+- Execute `publish-v0-to-npm.sh` and setup the npm Trusted Publisher that accepts a release from workflows on this repo.
 
 Without these one-time setups the release will not work.
