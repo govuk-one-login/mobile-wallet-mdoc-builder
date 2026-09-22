@@ -1,17 +1,11 @@
 # Release process
 
-This document explains how releasing works for maintainers of this project. It covers what happens
-automatically, where the human gates are, and how to operate and troubleshoot the pipeline.
+This document explains how releasing works for maintainers of this project.
 
 ## Overview
 
 Releasing is fully automated from a merge to `main` through to a published npm package, with two human
-approval gates. It is driven by two workflows:
-
-- **[`release.yml`](../.github/workflows/release.yml)** — runs on every push to `main`. Computes the next
-  version from Conventional Commits, bumps `package.json`, and creates a version commit + `v*` tag.
-- **[`publish.yml`](../.github/workflows/publish.yml)** — runs when a `v*.*.*` tag is pushed. Publishes to
-  npm (staged, via OIDC) and creates a draft GitHub Release.
+approval gates.
 
 ```
 merge to main (feat:/fix:)
@@ -33,16 +27,16 @@ The version is derived automatically from commit messages since the last tag, fo
 - `fix:` → patch bump
 - `feat:` → minor bump
 - `feat!:` / `fix!:` or a `BREAKING CHANGE:` footer → major bump
+- `chore`, `docs` etc produce no version bump
 
-[cocogitto](https://docs.cocogitto.io/) computes the version. See [`cog.toml`](../cog.toml): it keeps a bare
-semver in `package.json` (via a `pre_bump` hook running `npm version`) and prefixes only the git tag with `v`
-(e.g. `v0.3.0`). Commits that don't affect the version produce no release.
+[cocogitto](https://docs.cocogitto.io/) computes the version. See [`cog.toml`](../cog.toml): it keeps a bare semver in `package.json`  
+and prefixes only the git tag with `v` (e.g. `v0.3.0`).
 
 ## The release workflow (`release.yml`)
 
 Triggers on push to `main` and via manual `workflow_dispatch`. After the standard quality gates it:
 
-1. Assumes an AWS IAM role and etches the release GitHub App credentials from AWS Secrets Manager.
+1. Assumes an AWS IAM role and fetches the release GitHub App credentials from AWS Secrets Manager.
 2. Mints a GitHub App installation token and derives the App's bot identity.
 3. Runs cocogitto to create the bump commit + `v*` tag.
 4. Pushes the commit to `main` and the tag — **as the GitHub App**, which is what re-triggers `publish.yml`
@@ -78,8 +72,7 @@ There are two deliberate manual approvals per release:
 
 ## How to cut a release
 
-Normally you don't do anything special — merge PRs to `main` with Conventional Commit messages and the
-pipeline runs. To release:
+Merge PRs to `main` with Conventional Commit messages and the pipeline runs. To release:
 
 1. Merge a `feat:` or `fix:` PR to `main`.
 2. Wait for `release.yml` to create the bump commit + tag, then `publish.yml` to start.
@@ -91,10 +84,10 @@ pipeline runs. To release:
 
 The pipeline depends on infrastructure and settings configured outside this repo
 
-- AWS Secrets Manager + OIDC role,
-- The release GitHub App,
-- Branch/tag rulesets,
-- The `npm-publish` environment,
-- The npm Trusted Publisher.
+- GitHub App 'Wallet Mdoc Release App' installed in the One Login org and configured to bypass rulesets on this repo.
+- AWS Secrets Manager to hold the client id and private key of the github app
+- IAM role to allow GitHub actions in this repo to access the above secrets
+- The `npm-publish` environment with tag rules and approvers.
+- The npm Trusted Publisher that accepts a release from workflows on this repo.
 
 Without these one-time setups the release will not work.
