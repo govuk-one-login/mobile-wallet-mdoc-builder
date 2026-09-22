@@ -256,4 +256,79 @@ describe("buildMdoc", () => {
   it("exports MdocBuilderError", () => {
     expect(new MdocBuilderError("x")).toBeInstanceOf(Error);
   });
+
+  describe("validation errors", () => {
+    it("rejects with MdocBuilderError when validation returns violations", async () => {
+      mockValidate.mockReturnValue([
+        { field: "documentType", message: "must not be empty" },
+      ]);
+
+      await expect(buildMdoc(makeInput(), sign)).rejects.toThrow(
+        MdocBuilderError,
+      );
+    });
+
+    it("aggregates all field: message pairs into the error message", async () => {
+      mockValidate.mockReturnValue([
+        { field: "documentType", message: "must not be empty" },
+        { field: "statusList.idx", message: "must be non-negative" },
+      ]);
+
+      await expect(buildMdoc(makeInput(), sign)).rejects.toThrow(
+        "documentType: must not be empty; statusList.idx: must be non-negative",
+      );
+    });
+
+    it("does not call any downstream component when validation fails", async () => {
+      mockValidate.mockReturnValue([
+        { field: "documentType", message: "must not be empty" },
+      ]);
+
+      await expect(buildMdoc(makeInput(), sign)).rejects.toThrow(
+        MdocBuilderError,
+      );
+
+      expect(mockBuildDeviceKeyInfo).not.toHaveBeenCalled();
+      expect(mockBuildIssuerSignedItems).not.toHaveBeenCalled();
+      expect(mockBuildValidityInfo).not.toHaveBeenCalled();
+      expect(mockBuildMso).not.toHaveBeenCalled();
+      expect(mockAssembleIssuerAuth).not.toHaveBeenCalled();
+      expect(mockAssembleIssuerSigned).not.toHaveBeenCalled();
+      expect(mockMdocOutput).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("error propagation", () => {
+    it("propagates an error thrown by buildDeviceKeyInfo", async () => {
+      const error = new Error("device key import failed");
+      mockBuildDeviceKeyInfo.mockImplementation(() => {
+        throw error;
+      });
+
+      await expect(buildMdoc(makeInput(), sign)).rejects.toBe(error);
+    });
+
+    it("propagates a rejection from buildIssuerSignedItems", async () => {
+      const error = new Error("item build failed");
+      mockBuildIssuerSignedItems.mockRejectedValue(error);
+
+      await expect(buildMdoc(makeInput(), sign)).rejects.toBe(error);
+    });
+
+    it("propagates a rejection from assembleIssuerAuth (signing failure)", async () => {
+      const error = new Error("signing failed");
+      mockAssembleIssuerAuth.mockRejectedValue(error);
+
+      await expect(buildMdoc(makeInput(), sign)).rejects.toBe(error);
+    });
+
+    it("propagates an error thrown by assembleIssuerSigned", async () => {
+      const error = new Error("assembly failed");
+      mockAssembleIssuerSigned.mockImplementation(() => {
+        throw error;
+      });
+
+      await expect(buildMdoc(makeInput(), sign)).rejects.toBe(error);
+    });
+  });
 });
