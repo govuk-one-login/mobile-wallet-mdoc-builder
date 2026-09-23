@@ -164,17 +164,15 @@ describe("buildMdoc", () => {
     });
   });
 
-  describe("validation errors", () => {
-    it("rejects with MdocBuilderError when validation returns violations", async () => {
-      mockValidate.mockReturnValue([
-        { field: "documentType", message: "must not be empty" },
-      ]);
+  describe("return value", () => {
+    it("resolves to an Mdoc exposing the assembled bytes", async () => {
+      const result = await buildMdoc(makeInput(), sign);
 
-      await expect(buildMdoc(makeInput(), sign)).rejects.toThrow(
-        MdocBuilderError,
-      );
+      expect(result.asBytes()).toEqual(ASSEMBLED);
     });
+  });
 
+  describe("validation errors", () => {
     it("attaches the structured violations to the thrown error", async () => {
       const violations = [
         { field: "documentType", message: "must not be empty" },
@@ -182,6 +180,9 @@ describe("buildMdoc", () => {
       ];
       mockValidate.mockReturnValue(violations);
 
+      await expect(buildMdoc(makeInput(), sign)).rejects.toThrow(
+        MdocBuilderError,
+      );
       await expect(buildMdoc(makeInput(), sign)).rejects.toMatchObject({
         message: "Input validation failed",
         violations,
