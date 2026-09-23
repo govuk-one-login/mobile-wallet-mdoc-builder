@@ -130,35 +130,20 @@ describe("buildMdoc", () => {
   });
 
   describe("delegation", () => {
-    it("passes each component's output to the next and wraps the result", async () => {
+    it("wires each component to the next with correctly derived arguments", async () => {
       const input = makeInput();
 
       await buildMdoc(input, sign);
 
       expect(mockValidate).toHaveBeenCalledWith(input);
-      expect(mockBuildIssuerSignedItems).toHaveBeenCalledWith(input.nameSpaces);
-      expect(mockBuildValidityInfo).toHaveBeenCalledWith(
-        input.credentialValidity,
-      );
-      expect(mockAssembleIssuerSigned).toHaveBeenCalledWith(
-        ITEM_BYTES,
-        ISSUER_AUTH,
-      );
-      expect(mockMdocOutput).toHaveBeenCalledWith(ASSEMBLED);
-    });
-
-    it("derives buildDeviceKeyInfo namespace names from the nameSpaces keys", async () => {
-      const input = makeInput();
-      await buildMdoc(input, sign);
       expect(mockBuildDeviceKeyInfo).toHaveBeenCalledWith(DEVICE_KEY, [
         "org.iso.18013.5.1",
         "uk.gov.wallet.1",
       ]);
-    });
-
-    it("maps documentType to docType and threads the correct MSO inputs", async () => {
-      const input = makeInput();
-      await buildMdoc(input, sign);
+      expect(mockBuildIssuerSignedItems).toHaveBeenCalledWith(input.nameSpaces);
+      expect(mockBuildValidityInfo).toHaveBeenCalledWith(
+        input.credentialValidity,
+      );
       expect(mockBuildMso).toHaveBeenCalledWith({
         docType: "org.iso.18013.5.1.mDL",
         valueDigests: VALUE_DIGESTS,
@@ -166,16 +151,16 @@ describe("buildMdoc", () => {
         validityInfo: VALIDITY_INFO,
         statusList: input.statusList,
       });
-    });
-
-    it("calls assembleIssuerAuth with MSO bytes, certificate chain, and sign", async () => {
-      const input = makeInput();
-      await buildMdoc(input, sign);
       expect(mockAssembleIssuerAuth).toHaveBeenCalledWith(
         MSO_BYTES,
         input.certificateChain,
         sign,
       );
+      expect(mockAssembleIssuerSigned).toHaveBeenCalledWith(
+        ITEM_BYTES,
+        ISSUER_AUTH,
+      );
+      expect(mockMdocOutput).toHaveBeenCalledWith(ASSEMBLED);
     });
   });
 
