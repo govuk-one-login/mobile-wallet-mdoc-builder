@@ -9,6 +9,7 @@ export type {
   MdocBuilderInput,
   SigningFunction,
   Mdoc,
+  ValidationError,
 } from "./types";
 import type { Mdoc, MdocBuilderInput, SigningFunction } from "./types";
 import { MdocBuilderError } from "./types";
@@ -40,10 +41,7 @@ export async function buildMdoc(
 ): Promise<Mdoc> {
   const violations = validateMdocBuilderInput(input);
   if (violations.length > 0) {
-    const aggregated = violations
-      .map((violation) => `${violation.field}: ${violation.message}`)
-      .join("; ");
-    throw new MdocBuilderError(`Input validation failed: ${aggregated}`);
+    throw new MdocBuilderError("Input validation failed", { violations });
   }
 
   const deviceKeyInfo = buildDeviceKeyInfo(input.deviceKey, [

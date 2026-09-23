@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { MdocBuilderInput, SigningFunction } from "./index.js";
-import type { ValidationError } from "./validation";
+import type { ValidationError } from "./types";
 import type { IssuerSignedItemResult } from "./issuerSigned";
 import type { DeviceKeyInfo } from "./deviceKey";
 import type { ValidityInfo } from "./validityInfo";
@@ -184,15 +184,17 @@ describe("buildMdoc", () => {
       );
     });
 
-    it("aggregates all field: message pairs into the error message", async () => {
-      mockValidate.mockReturnValue([
+    it("attaches the structured violations to the thrown error", async () => {
+      const violations = [
         { field: "documentType", message: "must not be empty" },
         { field: "statusList.idx", message: "must be non-negative" },
-      ]);
+      ];
+      mockValidate.mockReturnValue(violations);
 
-      await expect(buildMdoc(makeInput(), sign)).rejects.toThrow(
-        "documentType: must not be empty; statusList.idx: must be non-negative",
-      );
+      await expect(buildMdoc(makeInput(), sign)).rejects.toMatchObject({
+        message: "Input validation failed",
+        violations,
+      });
     });
 
     it("does not call any downstream component when validation fails", async () => {
