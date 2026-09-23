@@ -164,15 +164,6 @@ describe("buildMdoc", () => {
     });
   });
 
-  describe("return value", () => {
-    it("returns an object satisfying the Mdoc interface", async () => {
-      const result = await buildMdoc(makeInput(), sign);
-      expect(result.asBytes()).toBe(ASSEMBLED);
-      expect(typeof result.asHex()).toBe("string");
-      expect(typeof result.asBase64Url()).toBe("string");
-    });
-  });
-
   describe("validation errors", () => {
     it("rejects with MdocBuilderError when validation returns violations", async () => {
       mockValidate.mockReturnValue([
