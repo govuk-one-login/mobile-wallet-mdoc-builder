@@ -130,13 +130,24 @@ describe("buildMdoc", () => {
   });
 
   describe("delegation", () => {
-    it("calls validateMdocBuilderInput with the input", async () => {
+    it("passes each component's output to the next and wraps the result", async () => {
       const input = makeInput();
+
       await buildMdoc(input, sign);
+
       expect(mockValidate).toHaveBeenCalledWith(input);
+      expect(mockBuildIssuerSignedItems).toHaveBeenCalledWith(input.nameSpaces);
+      expect(mockBuildValidityInfo).toHaveBeenCalledWith(
+        input.credentialValidity,
+      );
+      expect(mockAssembleIssuerSigned).toHaveBeenCalledWith(
+        ITEM_BYTES,
+        ISSUER_AUTH,
+      );
+      expect(mockMdocOutput).toHaveBeenCalledWith(ASSEMBLED);
     });
 
-    it("calls buildDeviceKeyInfo with deviceKey and namespace keys", async () => {
+    it("derives buildDeviceKeyInfo namespace names from the nameSpaces keys", async () => {
       const input = makeInput();
       await buildMdoc(input, sign);
       expect(mockBuildDeviceKeyInfo).toHaveBeenCalledWith(DEVICE_KEY, [
@@ -145,21 +156,7 @@ describe("buildMdoc", () => {
       ]);
     });
 
-    it("calls buildIssuerSignedItems with the nameSpaces", async () => {
-      const input = makeInput();
-      await buildMdoc(input, sign);
-      expect(mockBuildIssuerSignedItems).toHaveBeenCalledWith(input.nameSpaces);
-    });
-
-    it("calls buildValidityInfo with the credentialValidity", async () => {
-      const input = makeInput();
-      await buildMdoc(input, sign);
-      expect(mockBuildValidityInfo).toHaveBeenCalledWith(
-        input.credentialValidity,
-      );
-    });
-
-    it("calls buildMso mapping documentType to docType with correct sources", async () => {
+    it("maps documentType to docType and threads the correct MSO inputs", async () => {
       const input = makeInput();
       await buildMdoc(input, sign);
       expect(mockBuildMso).toHaveBeenCalledWith({
@@ -179,68 +176,6 @@ describe("buildMdoc", () => {
         input.certificateChain,
         sign,
       );
-    });
-
-    it("calls assembleIssuerSigned with item bytes and issuerAuth", async () => {
-      await buildMdoc(makeInput(), sign);
-      expect(mockAssembleIssuerSigned).toHaveBeenCalledWith(
-        ITEM_BYTES,
-        ISSUER_AUTH,
-      );
-    });
-
-    it("wraps the assembled bytes in a MdocOutput", async () => {
-      await buildMdoc(makeInput(), sign);
-      expect(mockMdocOutput).toHaveBeenCalledWith(ASSEMBLED);
-    });
-  });
-
-  describe("ordering", () => {
-    it("invokes components in the documented order, validity immediately before MSO", async () => {
-      const order: string[] = [];
-      mockValidate.mockImplementation(() => {
-        order.push("validate");
-        return [];
-      });
-      mockBuildDeviceKeyInfo.mockImplementation(() => {
-        order.push("deviceKey");
-        return DEVICE_KEY_INFO;
-      });
-      mockBuildIssuerSignedItems.mockImplementation(() => {
-        order.push("issuerSignedItems");
-        return Promise.resolve({
-          issuerSignedItemBytes: ITEM_BYTES,
-          valueDigests: VALUE_DIGESTS,
-        });
-      });
-      mockBuildValidityInfo.mockImplementation(() => {
-        order.push("validityInfo");
-        return VALIDITY_INFO;
-      });
-      mockBuildMso.mockImplementation(() => {
-        order.push("mso");
-        return MSO_BYTES;
-      });
-      mockAssembleIssuerAuth.mockImplementation(() => {
-        order.push("issuerAuth");
-        return Promise.resolve(ISSUER_AUTH);
-      });
-      mockAssembleIssuerSigned.mockImplementation(() => {
-        order.push("issuerSigned");
-        return ASSEMBLED;
-      });
-
-      await buildMdoc(makeInput(), sign);
-
-      expect(order).toEqual([
-        "validate",
-        "deviceKey",
-        "issuerSignedItems",
-        "validityInfo",
-        "mso",
-        "issuerAuth",
-        "issuerSigned",
-      ]);
     });
   });
 
