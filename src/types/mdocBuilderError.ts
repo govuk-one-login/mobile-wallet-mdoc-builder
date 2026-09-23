@@ -15,8 +15,7 @@ export interface MdocBuilderErrorOptions extends ErrorOptions {
  * Error thrown by the mdoc builder when construction or signing fails.
  *
  * When the failure is caused by input validation, `violations` holds the
- * complete set of {@link ValidationError} entries so callers can inspect and
- * present each problem individually rather than parsing the message string.
+ * complete set of {@link ValidationError} entries which callers can inspect.
  */
 export class MdocBuilderError extends Error {
   /** The validation violations that caused the failure, if any. */

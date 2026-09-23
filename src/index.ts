@@ -24,10 +24,6 @@ import { MdocOutput } from "./mdoc";
 /**
  * Builds an mdoc (ISO 18013-5) document from the provided input.
  *
- * Orchestrates the internal components in order: input validation, device key
- * handling, IssuerSignedItem construction, credential validity, MSO
- * construction, signing (issuerAuth assembly), and IssuerSigned assembly.
- *
  * @param input - The mdoc builder input containing document data and metadata.
  * @param sign - A signing function called with the `toBeSigned` bytes.
  * @returns A promise resolving to the built Mdoc document.
