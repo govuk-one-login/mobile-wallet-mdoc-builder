@@ -69,7 +69,7 @@ describe("mdocBuilderInputSchema — deterministic clock", () => {
     input.documentType = "";
     input.deviceKey = new Uint8Array([]);
     input.statusList = { idx: -1, uri: "not a url" };
-    input.certificateChain = [];
+    input.certificateChain = [] as unknown as [Uint8Array, ...Uint8Array[]];
 
     const errors = validate(input);
     const fields = errors.map((e) => e.field);

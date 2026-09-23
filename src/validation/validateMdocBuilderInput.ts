@@ -8,7 +8,7 @@ import {
 import { nameSpacesSchema } from "./nameSpaces.js";
 import { credentialValiditySchema } from "./credentialValidity.js";
 import { mapZodErrorToValidationErrors } from "./errors.js";
-import type { ValidationError } from "./errors.js";
+import type { ValidationError } from "../types";
 
 export function mdocBuilderInputSchema(now: Date) {
   return z
