@@ -217,34 +217,47 @@ describe("buildMdoc", () => {
   });
 
   describe("error propagation", () => {
-    it("propagates an error thrown by buildDeviceKeyInfo", async () => {
-      const error = new Error("device key import failed");
-      mockBuildDeviceKeyInfo.mockImplementation(() => {
-        throw error;
-      });
-
-      await expect(buildMdoc(makeInput(), sign)).rejects.toBe(error);
-    });
-
-    it("propagates a rejection from buildIssuerSignedItems", async () => {
-      const error = new Error("item build failed");
-      mockBuildIssuerSignedItems.mockRejectedValue(error);
-
-      await expect(buildMdoc(makeInput(), sign)).rejects.toBe(error);
-    });
-
-    it("propagates a rejection from assembleIssuerAuth (signing failure)", async () => {
-      const error = new Error("signing failed");
-      mockAssembleIssuerAuth.mockRejectedValue(error);
-
-      await expect(buildMdoc(makeInput(), sign)).rejects.toBe(error);
-    });
-
-    it("propagates an error thrown by assembleIssuerSigned", async () => {
-      const error = new Error("assembly failed");
-      mockAssembleIssuerSigned.mockImplementation(() => {
-        throw error;
-      });
+    it.each([
+      {
+        name: "buildDeviceKeyInfo",
+        fail: (error: Error) =>
+          mockBuildDeviceKeyInfo.mockImplementation(() => {
+            throw error;
+          }),
+      },
+      {
+        name: "buildIssuerSignedItems",
+        fail: (error: Error) =>
+          mockBuildIssuerSignedItems.mockRejectedValue(error),
+      },
+      {
+        name: "buildValidityInfo",
+        fail: (error: Error) =>
+          mockBuildValidityInfo.mockImplementation(() => {
+            throw error;
+          }),
+      },
+      {
+        name: "buildMso",
+        fail: (error: Error) =>
+          mockBuildMso.mockImplementation(() => {
+            throw error;
+          }),
+      },
+      {
+        name: "assembleIssuerAuth",
+        fail: (error: Error) => mockAssembleIssuerAuth.mockRejectedValue(error),
+      },
+      {
+        name: "assembleIssuerSigned",
+        fail: (error: Error) =>
+          mockAssembleIssuerSigned.mockImplementation(() => {
+            throw error;
+          }),
+      },
+    ])("propagates an error from $name unchanged", async ({ fail }) => {
+      const error = new Error("component failed");
+      fail(error);
 
       await expect(buildMdoc(makeInput(), sign)).rejects.toBe(error);
     });
