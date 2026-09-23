@@ -21,6 +21,11 @@ export class MdocBuilderError extends Error {
   /** The validation violations that caused the failure, if any. */
   readonly violations?: ValidationError[];
 
+  /**
+   * @param message - A description of why the build failed.
+   * @param options - Optional error options, including the validation
+   * `violations` and a standard `cause`.
+   */
   constructor(message: string, options?: MdocBuilderErrorOptions) {
     super(message, options);
     this.name = "MdocBuilderError";
