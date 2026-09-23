@@ -21,7 +21,7 @@ You are producing an implementation approach document for a ticket in the mobile
 
 Before planning, read the following to understand the project:
 
-1. **Project conventions** — read `AGENTS.md` and `README.md` in the repository root.
+1. **Project conventions** — `AGENTS.md` is already in context as the authority on repo conventions; read `README.md` in the repository root for the product and release picture.
 2. **Documentation** — read every file in the `docs/` folder to understand the project's architecture, testing guides, and any other reference material.
 3. **Existing source** — explore `src/` to understand the current module structure, patterns, and what has been implemented.
 4. **Git history** — run `git log --oneline -40` to understand what work has been completed. Only read commit titles.
@@ -60,9 +60,15 @@ Do not proceed to Step 4 until all questions are resolved.
 
 ### Step 4: Produce the Approach Document
 
-Before producing the approach document, read the following reference files relative to this skill:
+Before producing the approach document, read the following reference files relative to this skill.
 
-- `references/approach-document-template.md` — the output format template to follow exactly
-- `references/phase-design-rules.md` — constraints that every phase must satisfy
+Shared references (Layer 2 — the same artefacts `contribute-to-module` follows when implementing):
+
+- `../shared/references/phase-design-rules.md` — the shared phasing strategy; constraints that every phase must satisfy.
+- `../shared/references/doc-sync-map.md` — consult for **awareness only**: flag in a phase's notes when its change will trigger a documentation update, but do not copy the trigger→target mapping into the plan. The authoritative mapping is applied at implementation time (the code is the source of truth, so which docs a change ultimately touches is decided when the change is made).
+
+Skill-local reference (Layer 3):
+
+- `references/approach-document-template.md` — the output format template to follow exactly.
 
 Once all questions are resolved, produce the approach document following the template and rules from the reference files above.
