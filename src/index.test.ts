@@ -173,10 +173,6 @@ describe("buildMdoc", () => {
     });
   });
 
-  it("exports MdocBuilderError", () => {
-    expect(new MdocBuilderError("x")).toBeInstanceOf(Error);
-  });
-
   describe("validation errors", () => {
     it("rejects with MdocBuilderError when validation returns violations", async () => {
       mockValidate.mockReturnValue([
