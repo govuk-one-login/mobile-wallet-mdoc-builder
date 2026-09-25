@@ -5,7 +5,7 @@ Write the approach document to disk at `context/<ticket-id>-approach.md` (create
 This file is a **living document**, not a one-shot artifact:
 
 - The `Progress` table's `Status` column must be updated as each phase is completed (e.g. ⬜ → 🟩), and the file re-saved, so the plan reflects real state across sessions.
-- Updating the status column is part of the per-phase verification flow (see Principles), not a separate manual step to remember later.
+- Updating the status column is part of the per-phase verification flow (see the Principles section and the shared phasing strategy it links to), not a separate manual step to remember later.
 
 ---
 
@@ -20,12 +20,11 @@ This file is a **living document**, not a one-shot artifact:
 
 ## Principles
 
-- **TDD** — tests are written before production code at every step.
-- **Phased** — each phase is a logical, self-contained unit of work that delivers one testable chunk of the ticket.
-- **Verification** — each phase ends by running the single `npm run verify` gate once (see `AGENTS.md`).
-- **Committable, but never commit** — leave each phase committable with a proposed conventional commit message; never execute or propose to execute the commit command (see `AGENTS.md`).
-- **Context check** — before starting each phase, read the commits on the current branch (`git log --oneline main..HEAD`) to understand what work has already been completed.
-- **Progress tracking** — after each phase, update the `Status` column in the `Progress` table below and re-save this file.
+This approach follows the shared phasing strategy in
+[`phase-design-rules.md`](../.kiro/skills/shared/references/phase-design-rules.md) — TDD, logical
+self-contained phases, the single `npm run verify` gate, stopping for human review at each phase
+boundary, and the `AGENTS.md` commit convention. Progress is tracked in the table below: after each
+phase, update its `Status` and re-save this file.
 
 ---
 

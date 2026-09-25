@@ -1,5 +1,8 @@
 # Documentation Sync Map
 
+Shared reference for the mdoc-builder skills. Consumed by `plan-mdoc-core-build` (to flag which phases
+will trigger doc updates) and `contribute-to-module` (to apply the update when the change is made).
+
 Documentation travels with code: a change is not finished until the docs it affects match. When a phase
 makes one of the changes below, update the corresponding documentation in the same phase, before
 proposing the commit.
