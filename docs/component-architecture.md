@@ -1,115 +1,71 @@
-# Mobile Wallet mdoc Builder Documentation
+# Mobile Wallet mdoc Builder Component Architecture Diagram
 
-## Component Architecture Diagram
+This diagram shows the internal architecture of the mdoc builder library: the components that make up
+the library, the order in which `buildMdoc` composes them, and how the CBOR abstraction layer underpins
+encoding across the system. `buildMdoc(input, sign)` is the only public entry point; it orchestrates all
+internal components in sequence to produce a signed mdoc credential.
 
-This diagram shows the internal architecture of the mdoc builder library. It maps the components that make up the library, how data flows between them, and how the CBOR abstraction layer underpins encoding
-across the system. The public API surface is `buildMdoc`, which orchestrates all internal components to produce a signed mdoc credential.
+The flow below reads top to bottom in the exact order `buildMdoc` runs (see `src/index.ts`).
 
 ```mermaid
-graph TD
-    %% Public API surface
-    subgraph Public["Public API"]
-        buildMdoc["buildMdoc(input, sign)"]
-        MdocOutput["Mdoc Output\n.asBase64Url() / .asHex() / .asBytes()"]
+flowchart TD
+    input([MdocBuilderInput + SigningFunction])
+
+    subgraph pipeline["buildMdoc pipeline (src/index.ts)"]
+        direction TB
+        validate["1 · Validate input<br/>validateMdocBuilderInput"]
+        deviceKey["2 · Device key handling<br/>buildDeviceKeyInfo"]
+        items["3 · IssuerSignedItems + digests<br/>buildIssuerSignedItems"]
+        validity["4 · Credential validity<br/>buildValidityInfo"]
+        mso["5 · MSO construction<br/>buildMso"]
+        issuerAuth["6 · Sign + assemble issuerAuth<br/>assembleIssuerAuth"]
+        assemble["7 · Assemble IssuerSigned<br/>assembleIssuerSigned"]
+        output["8 · Wrap output<br/>MdocOutput"]
     end
 
-    %% Internal components
-    subgraph Validation["Input Validation"]
-        Validator["Validation Function\n(collects all errors)"]
-    end
+    result([Mdoc · asBase64Url / asHex / asBytes])
 
-    subgraph DeviceKey["Device Key Handling"]
-        SPKIImport["SPKI Import\n(Web Crypto API)"]
-        COSEKey["COSE_Key Construction\n(P-256: kty, crv, x, y)"]
-        KeyAuth["keyAuthorizations\n(derived from namespace names)"]
-    end
+    cbor[["CBOR abstraction layer (src/cbor)<br/>encode · tdate (Tag 0) · fullDate (Tag 1004) · embeddedCbor (Tag 24)"]]
 
-    subgraph CredentialValidity["Credential Validity"]
-        ValidityResolver["ValidityInfo Resolver\n(signed, validFrom, validUntil, expectedUpdate)"]
-    end
+    input --> validate
+    validate --> deviceKey
+    validate --> items
+    validate --> validity
 
-    subgraph IssuerSignedItems["IssuerSignedItem Construction"]
-        ItemBuilder["IssuerSignedItem Builder\n(digestID, random salt, element)"]
-        DigestCompute["SHA-256 Digest Computation\n(over Tag 24 encoded bytes)"]
-        ValueDigests["valueDigests Map\n(namespace → digestID → digest)"]
-    end
+    deviceKey --> mso
+    items -->|valueDigests| mso
+    validity --> mso
 
-    subgraph MSOConstruction["MSO Construction"]
-        MSOBuilder["MSO Builder\n(version, digestAlgorithm, valueDigests,\ndeviceKeyInfo, validityInfo, status, docType)"]
-    end
+    mso -->|msoBytes| issuerAuth
+    issuerAuth -->|issuerAuth| assemble
+    items -->|issuerSignedItemBytes| assemble
+    assemble -->|CBOR bytes| output
+    output --> result
 
-    subgraph Signing["Signing"]
-        ProtectedHeader["Protected Header\n(alg: ES256)"]
-        SigStructure["Sig_Structure\n(Signature1, protected, empty AAD, MSO)"]
-        ToBeSigned["toBeSigned bytes"]
-        SignCallback["Caller's SigningFunction"]
-        IssuerAuth["issuerAuth / COSE_Sign1\n(protected, unprotected{x5chain}, MSO, signature)"]
-    end
-
-    subgraph Assembly["IssuerSigned Assembly"]
-        IssuerSigned["IssuerSigned\n(nameSpaces + issuerAuth)\nCBOR-encoded"]
-    end
-
-    subgraph CBOR["CBOR Abstraction Layer"]
-        Encoder["CBOR Encoder\n(deterministic, definite-length)"]
-        Tag0["Tag 0 — tdate"]
-        Tag1004["Tag 1004 — full-date"]
-        Tag24["Tag 24 — embedded CBOR"]
-    end
-
-    %% Flow
-    buildMdoc --> Validator
-    Validator -->|valid input| SPKIImport
-    Validator -->|valid input| ItemBuilder
-    Validator -->|valid input| ValidityResolver
-
-    SPKIImport --> COSEKey
-    COSEKey --> KeyAuth
-
-    ItemBuilder --> DigestCompute
-    DigestCompute --> ValueDigests
-
-    KeyAuth --> MSOBuilder
-    ValueDigests --> MSOBuilder
-    ValidityResolver --> MSOBuilder
-
-    MSOBuilder --> ProtectedHeader
-    MSOBuilder --> SigStructure
-    ProtectedHeader --> SigStructure
-    SigStructure --> ToBeSigned
-    ToBeSigned --> SignCallback
-    SignCallback --> IssuerAuth
-    ProtectedHeader --> IssuerAuth
-
-    IssuerAuth --> IssuerSigned
-    ItemBuilder --> IssuerSigned
-
-    IssuerSigned --> MdocOutput
-
-    %% CBOR used by multiple components
-    Encoder -.->|encodes| ItemBuilder
-    Encoder -.->|encodes| MSOBuilder
-    Encoder -.->|encodes| SigStructure
-    Encoder -.->|encodes| IssuerSigned
-    Tag0 -.-> ValidityResolver
-    Tag0 -.-> ItemBuilder
-    Tag1004 -.-> ItemBuilder
-    Tag24 -.-> ItemBuilder
-
+    cbor -.encodes.-> items
+    cbor -.encodes.-> mso
+    cbor -.encodes.-> issuerAuth
+    cbor -.encodes.-> assemble
 ```
+
+`assembleIssuerAuth` is itself composed of smaller internal steps (`src/issuerAuth/`): it builds the
+COSE protected header (`alg: ES256`), the unprotected header carrying `x5chain` (from
+`certificateChain[0]`), and the `Sig_Structure` `toBeSigned` bytes; calls the caller's `SigningFunction`
+with `toBeSigned`; validates the returned signature (a 64-byte P-256 `r||s` `Uint8Array`); and returns
+`issuerAuth` as a `[protectedHeader, unprotectedHeader, msoBytes, signature]` structure — not
+CBOR-encoded. Final CBOR encoding happens in `assembleIssuerSigned`.
 
 ## Component Summary
 
-| Component                            | Responsibility                                                                      |
-| ------------------------------------ | ----------------------------------------------------------------------------------- |
-| **buildMdoc**                        | Public entry point — orchestrates all internal components                           |
-| **Input Validation**                 | Validates `MdocBuilderInput`, collects all errors before returning                  |
-| **Device Key Handling**              | Imports SPKI key via Web Crypto, builds COSE_Key (P-256), derives keyAuthorizations |
-| **Credential Validity**              | Resolves `signed`, `validFrom`, `validUntil`, `expectedUpdate` at construction time |
-| **IssuerSignedItem Construction**    | Wraps each data element with digestID + random salt, computes SHA-256 digests       |
-| **MSO Construction**                 | Assembles the Mobile Security Object with all metadata and digests                  |
-| **Protected Header & Sig_Structure** | Builds COSE Sig_Structure to produce `toBeSigned` bytes                             |
-| **Signing Callback**                 | Passes `toBeSigned` to caller's function, assembles COSE_Sign1 (issuerAuth)         |
-| **IssuerSigned Assembly**            | Combines encoded namespace items + issuerAuth into final CBOR payload               |
-| **Mdoc Output**                      | Wraps raw bytes, exposes `.asBase64Url()`, `.asHex()`, `.asBytes()`                 |
-| **CBOR Abstraction Layer**           | Deterministic encoding, Tag 0/1004/24 support — isolates cbor2 dependency           |
+| Step | Component                  | Function                   | Responsibility                                                                      |
+| ---- | -------------------------- | -------------------------- | ----------------------------------------------------------------------------------- |
+| —    | **buildMdoc**              | `buildMdoc`                | Public entry point — orchestrates all internal components in order                  |
+| 1    | **Input Validation**       | `validateMdocBuilderInput` | Validates `MdocBuilderInput`, collecting all errors; `buildMdoc` throws on any      |
+| 2    | **Device Key Handling**    | `buildDeviceKeyInfo`       | Imports SPKI key via Web Crypto, builds COSE_Key (P-256), derives keyAuthorizations |
+| 3    | **IssuerSignedItems**      | `buildIssuerSignedItems`   | Wraps each element with digestID + random salt; computes SHA-256 valueDigests       |
+| 4    | **Credential Validity**    | `buildValidityInfo`        | Derives `signed`/`validFrom`; passes through `validUntil`/`expectedUpdate`          |
+| 5    | **MSO Construction**       | `buildMso`                 | Assembles the Mobile Security Object and CBOR-encodes it to `msoBytes`              |
+| 6    | **Sign + issuerAuth**      | `assembleIssuerAuth`       | Builds headers + `toBeSigned`, calls the signer, assembles COSE_Sign1 (issuerAuth)  |
+| 7    | **IssuerSigned Assembly**  | `assembleIssuerSigned`     | Combines encoded namespace items + issuerAuth into final CBOR payload               |
+| 8    | **Mdoc Output**            | `MdocOutput`               | Wraps raw bytes; exposes `.asBase64Url()`, `.asHex()`, `.asBytes()`                 |
+| —    | **CBOR Abstraction Layer** | `src/cbor`                 | Deterministic encoding, Tag 0/1004/24 support — isolates the `cbor2` dependency     |
