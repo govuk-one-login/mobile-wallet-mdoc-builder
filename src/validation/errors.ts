@@ -1,9 +1,5 @@
 import type { ZodError } from "zod";
-
-export interface ValidationError {
-  field: string;
-  message: string;
-}
+import type { ValidationError } from "../types";
 
 export function formatFieldPath(path: readonly PropertyKey[]): string {
   return path.reduce<string>((acc, segment) => {

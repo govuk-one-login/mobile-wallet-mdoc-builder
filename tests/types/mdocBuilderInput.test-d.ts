@@ -14,7 +14,7 @@ describe("MdocBuilderInput", () => {
       deviceKey: Uint8Array;
       credentialValidity: CredentialValidity;
       statusList: StatusList;
-      certificateChain: Uint8Array[];
+      certificateChain: [Uint8Array, ...Uint8Array[]];
     }>().toExtend<MdocBuilderInput>();
   });
 
@@ -24,7 +24,7 @@ describe("MdocBuilderInput", () => {
       deviceKey: Uint8Array;
       credentialValidity: CredentialValidity;
       statusList: StatusList;
-      certificateChain: Uint8Array[];
+      certificateChain: [Uint8Array, ...Uint8Array[]];
     }>().not.toExtend<MdocBuilderInput>();
   });
 
@@ -34,7 +34,7 @@ describe("MdocBuilderInput", () => {
       deviceKey: Uint8Array;
       credentialValidity: CredentialValidity;
       statusList: StatusList;
-      certificateChain: Uint8Array[];
+      certificateChain: [Uint8Array, ...Uint8Array[]];
     }>().not.toExtend<MdocBuilderInput>();
   });
 
@@ -44,7 +44,7 @@ describe("MdocBuilderInput", () => {
       nameSpaces: NameSpaces;
       credentialValidity: CredentialValidity;
       statusList: StatusList;
-      certificateChain: Uint8Array[];
+      certificateChain: [Uint8Array, ...Uint8Array[]];
     }>().not.toExtend<MdocBuilderInput>();
   });
 
@@ -54,7 +54,7 @@ describe("MdocBuilderInput", () => {
       nameSpaces: NameSpaces;
       deviceKey: Uint8Array;
       statusList: StatusList;
-      certificateChain: Uint8Array[];
+      certificateChain: [Uint8Array, ...Uint8Array[]];
     }>().not.toExtend<MdocBuilderInput>();
   });
 
@@ -64,7 +64,7 @@ describe("MdocBuilderInput", () => {
       nameSpaces: NameSpaces;
       deviceKey: Uint8Array;
       credentialValidity: CredentialValidity;
-      certificateChain: Uint8Array[];
+      certificateChain: [Uint8Array, ...Uint8Array[]];
     }>().not.toExtend<MdocBuilderInput>();
   });
 
@@ -85,7 +85,7 @@ describe("MdocBuilderInput", () => {
       deviceKey: string;
       credentialValidity: CredentialValidity;
       statusList: StatusList;
-      certificateChain: Uint8Array[];
+      certificateChain: [Uint8Array, ...Uint8Array[]];
     }>().not.toExtend<MdocBuilderInput>();
   });
 
@@ -97,6 +97,17 @@ describe("MdocBuilderInput", () => {
       credentialValidity: CredentialValidity;
       statusList: StatusList;
       certificateChain: string[];
+    }>().not.toExtend<MdocBuilderInput>();
+  });
+
+  it("does not accept a possibly-empty certificateChain array", () => {
+    expectTypeOf<{
+      documentType: string;
+      nameSpaces: NameSpaces;
+      deviceKey: Uint8Array;
+      credentialValidity: CredentialValidity;
+      statusList: StatusList;
+      certificateChain: Uint8Array[];
     }>().not.toExtend<MdocBuilderInput>();
   });
 });
