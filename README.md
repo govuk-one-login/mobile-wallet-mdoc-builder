@@ -29,7 +29,7 @@ dual-format (ESM and CJS) npm package.
 ## Installation
 
 ```bash
-npm install @govuk/mobile-wallet-mdoc-builder
+npm install @govuk-one-login/mobile-wallet-mdoc-builder
 ```
 
 Node.js 22 or later is required.
@@ -37,11 +37,14 @@ Node.js 22 or later is required.
 ## Quick start
 
 ```ts
-import { buildMdoc, DateFormat } from "@govuk/mobile-wallet-mdoc-builder";
+import {
+  buildMdoc,
+  DateFormat,
+} from "@govuk-one-login/mobile-wallet-mdoc-builder";
 import type {
   MdocBuilderInput,
   SigningFunction,
-} from "@govuk/mobile-wallet-mdoc-builder";
+} from "@govuk-one-login/mobile-wallet-mdoc-builder";
 
 const input: MdocBuilderInput = {
   documentType: "org.iso.18013.5.1.mDL",
@@ -150,7 +153,7 @@ subclass. It is thrown when:
   or returns a signature that is not 64 bytes.
 
 ```ts
-import { MdocBuilderError } from "@govuk/mobile-wallet-mdoc-builder";
+import { MdocBuilderError } from "@govuk-one-login/mobile-wallet-mdoc-builder";
 
 try {
   await buildMdoc(input, sign);
