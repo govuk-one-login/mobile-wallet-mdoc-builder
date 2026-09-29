@@ -1,3 +1,8 @@
 disable_changelog = true
-disable_bump_commit = true
 ignore_merge_commits = true
+tag_prefix = "v"
+disable_bump_commit = false
+# Write the computed version into package.json as part of the bump commit.
+pre_bump_hooks = [
+  "npm version {{version}} --no-git-tag-version --allow-same-version",
+]
