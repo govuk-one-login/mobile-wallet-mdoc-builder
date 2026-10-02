@@ -13,19 +13,29 @@ export async function buildIssuerSignedItems(
   const issuerSignedItemBytes = new Map<string, Uint8Array[]>();
   const valueDigests = new Map<string, Map<number, Uint8Array>>();
 
-  for (const [namespace, elements] of nameSpaces) {
-    const usedIds = new Set<number>();
-    const itemBytes: Uint8Array[] = [];
-    const digests = new Map<number, Uint8Array>();
+  const namespaceResults = await Promise.all(
+    [...nameSpaces].map(async ([namespace, elements]) => {
+      const usedIds = new Set<number>();
 
-    for (const element of elements) {
-      const { digestId, tag24Bytes } = buildSingleItem(element, usedIds);
-      const digest = await digestItem(tag24Bytes);
+      const items = elements.map((element) =>
+        buildSingleItem(element, usedIds),
+      );
 
-      itemBytes.push(tag24Bytes);
-      digests.set(digestId, digest);
-    }
+      const digestEntries = await Promise.all(
+        items.map(
+          async ({ digestId, tag24Bytes }) =>
+            [digestId, await digestItem(tag24Bytes)] as const,
+        ),
+      );
 
+      const itemBytes = items.map(({ tag24Bytes }) => tag24Bytes);
+      const digests = new Map<number, Uint8Array>(digestEntries);
+
+      return { namespace, itemBytes, digests } as const;
+    }),
+  );
+
+  for (const { namespace, itemBytes, digests } of namespaceResults) {
     issuerSignedItemBytes.set(namespace, itemBytes);
     valueDigests.set(namespace, digests);
   }

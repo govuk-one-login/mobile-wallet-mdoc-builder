@@ -10,4 +10,6 @@ export type { StatusList } from "./statusList.js";
 export type { MdocBuilderInput } from "./mdocBuilderInput.js";
 export type { SigningFunction } from "./signingFunction.js";
 export type { Mdoc } from "./mdoc.js";
+export type { ValidationError } from "./validationError.js";
 export { MdocBuilderError } from "./mdocBuilderError.js";
+export type { MdocBuilderErrorOptions } from "./mdocBuilderError.js";

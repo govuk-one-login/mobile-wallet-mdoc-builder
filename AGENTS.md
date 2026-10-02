@@ -9,19 +9,16 @@ dual-format (ESM/CJS) npm package. Public entry point is `buildMdoc(input, sign)
 orchestrates validation, device key handling, credential validity, IssuerSignedItem construction, MSO
 construction, signing, and final assembly. See `docs/component-architecture.md` for the full component diagram.
 
-The library is early-stage: `buildMdoc` currently throws `MdocBuilderError("not implemented")`. This is
-expected scaffolding, not a bug — components are being built incrementally.
+`buildMdoc` is implemented and orchestrates the full pipeline end to end. Individual components live under
+`src/` and are composed by the public entry point.
 
 ## Commands
 
 ```bash
 npm install               # setup — Node 22 required
-npm run lint              # eslint
 npm run format            # prettier --write
-npm run format:check      # prettier --check
-npm run typecheck         # tsc --noEmit
 npm run build             # tsdown -> dist/
-npm test                  # vitest run --coverage (unit tests, src/**/*.test.ts)
+npm run verify            # lint + format:check + typecheck + test — the single verification gate
 npm run test:component    # builds first, then runs tests/component (ESM + CJS) against dist/
 ```
 
@@ -34,6 +31,13 @@ changed.
 
 - **TDD is mandatory.** Tests are written before implementation, in small phases, each independently
   testable and committed separately.
+- **Run the test suite once, at the end.** Within a TDD cycle, do not run the suite immediately after
+  writing failing tests. Write the tests, implement, then run `npm run verify` once to validate the
+  work.
+- **Never commit.** The agent must never execute or propose to execute a git commit. Leave the work
+  in a committable state and propose a conventional commit message for the human to review and run.
+- **Self-documenting code.** Do not leave verbose comments; write code that explains itself. Add a
+  comment only where intent is genuinely non-obvious.
 - **Linting and formating.** Code that is implemented should comply with the project ESLint and Prettier checks.
 - **Conventional Commits** are enforced by a pre-commit `commit-msg` hook — non-conforming messages are
   rejected. Don't bypass with `--no-verify`.

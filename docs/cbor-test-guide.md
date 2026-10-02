@@ -1,5 +1,13 @@
 # CBOR Test Quick Reference
 
+> **Audience: maintainers.** This is a testing reference for the second layer of the
+> [two-layer CBOR testing strategy](../AGENTS.md#testing-strategy-for-cbor-producing-modules) — the
+> `*.encoding.test.ts` files that assert byte-exact output from the real CBOR encoder. It explains how
+> to read and hand-derive the expected byte sequences those tests compare against. See
+> [`docs/contributing.md`](./contributing.md) for how this fits into contributing, and the
+> `contribute-to-module` agent skill (`.kiro/skills/contribute-to-module/`) for the workflow that
+> applies it. AGENTS.md remains the source of truth for the testing conventions themselves.
+
 Quick reference for reading and writing CBOR byte assertions in `src/cbor/cbor.test.ts`.
 
 Every CBOR value starts with an **initial byte**: high 3 bits = major type, low 5 bits = argument.

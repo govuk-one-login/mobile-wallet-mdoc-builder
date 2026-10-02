@@ -114,6 +114,32 @@ describe("buildIssuerSignedItems", () => {
     expect(result.valueDigests.get("ns2")?.size).toBe(1);
   });
 
+  it("preserves element order in itemBytes", async () => {
+    const nameSpaces = makeNameSpaces([
+      [
+        "org.iso.18013.5.1",
+        [
+          { elementIdentifier: "first", elementValue: "1" },
+          { elementIdentifier: "second", elementValue: "2" },
+          { elementIdentifier: "third", elementValue: "3" },
+        ],
+      ],
+    ]);
+
+    const result = await buildIssuerSignedItems(nameSpaces);
+
+    const items = result.issuerSignedItemBytes.get("org.iso.18013.5.1");
+    expect(items).toBeDefined();
+    expect(items).toHaveLength(3);
+
+    // mockEncode returns an incrementing counter, so each item's first byte
+    // rises with processing order. Asserting firstBytes equals its ascending
+    // sort proves itemBytes preserved the original element order.
+    const firstBytes = (items ?? []).map((bytes) => bytes.at(0) ?? -1);
+    const sorted = [...firstBytes].sort((a, b) => a - b);
+    expect(firstBytes).toEqual(sorted);
+  });
+
   it("stored digest matches SHA-256 of the corresponding tag24Bytes", async () => {
     const nameSpaces = makeNameSpaces([
       ["ns", [{ elementIdentifier: "name", elementValue: "test" }]],
