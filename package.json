@@ -27,6 +27,7 @@
     "dist"
   ],
   "scripts": {
+    "prepare": "pre-commit install --hook-type pre-commit --hook-type commit-msg --hook-type pre-push",
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
