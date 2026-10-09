@@ -7,11 +7,11 @@ module structure, the TDD cycle, testing strategy, commit conventions, and archi
 ## Set up
 
 - **Node 22** — pinned in [`.nvmrc`](../.nvmrc); run `nvm use`.
-- **Install** — `npm install`.
+- **Install** the dependencies.
 - **pre-commit hooks** — install [`pre-commit`](https://pre-commit.com/) and enable them:
 
 ```bash
-pre-commit install
+npm i
 npm run prepare
 ```
 
