@@ -7,12 +7,13 @@ module structure, the TDD cycle, testing strategy, commit conventions, and archi
 ## Set up
 
 - **Node 22** — pinned in [`.nvmrc`](../.nvmrc); run `nvm use`.
-- **Install** — `npm install`.
+- **Install** the dependencies.
 - **pre-commit hooks** — install [`pre-commit`](https://pre-commit.com/) and enable them:
 
-  ```bash
-  pre-commit install --hook-type pre-commit --hook-type commit-msg
-  ```
+```bash
+npm i
+npm run prepare
+```
 
 The hooks run lint, format, and typecheck on commit, the test suite on push, and validate the commit
 message. `npm run verify` runs the same lint/format/typecheck/test gate in one command — run it before
