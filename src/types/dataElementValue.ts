@@ -4,11 +4,7 @@
  * These map to the CBOR major types used in ISO 18013-5 mdoc documents.
  */
 export type PrimitiveElementValue =
-  | string
-  | number
-  | boolean
-  | Date
-  | Uint8Array;
+  string | number | boolean | Date | Uint8Array;
 
 /**
  * The union of all permitted data element value types.
