@@ -40,9 +40,7 @@ export async function buildMdoc(
     throw new MdocBuilderError("Input validation failed", { violations });
   }
 
-  const deviceKeyInfo = buildDeviceKeyInfo(input.deviceKey, [
-    ...input.nameSpaces.keys(),
-  ]);
+  const deviceKeyInfo = buildDeviceKeyInfo(input.deviceKey);
 
   const { issuerSignedItemBytes, valueDigests } = await buildIssuerSignedItems(
     input.nameSpaces,

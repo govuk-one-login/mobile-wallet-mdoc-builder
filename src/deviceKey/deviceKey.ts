@@ -3,7 +3,7 @@ import { MdocBuilderError } from "../types/mdocBuilderError.js";
 import { decodeAndPadCoordinate } from "./helpers/padCoordinate.js";
 
 export type CoseKey = Map<number, number | Uint8Array>;
-export type DeviceKeyInfo = Map<string, CoseKey | Map<string, string[]>>;
+export type DeviceKeyInfo = Map<string, CoseKey>;
 
 const COSE_KEY_LABEL = {
   /** Key Type (kty) */
@@ -25,14 +25,9 @@ const COSE_KEY_VALUE = {
 
 const DEVICE_KEY_INFO_KEY = {
   DEVICE_KEY: "deviceKey",
-  KEY_AUTHORIZATIONS: "keyAuthorizations",
-  NAME_SPACES: "nameSpaces",
 } as const;
 
-export function buildDeviceKeyInfo(
-  spkiBytes: Uint8Array,
-  namespaceNames: string[],
-): DeviceKeyInfo {
+export function buildDeviceKeyInfo(spkiBytes: Uint8Array): DeviceKeyInfo {
   const keyObject = importSpki(spkiBytes);
   const jwk = keyObject.export({ format: "jwk" });
 
@@ -52,14 +47,6 @@ export function buildDeviceKeyInfo(
 
   const deviceKeyInfo: DeviceKeyInfo = new Map();
   deviceKeyInfo.set(DEVICE_KEY_INFO_KEY.DEVICE_KEY, coseKey);
-  if (namespaceNames.length > 0) {
-    const keyAuthorizations = new Map<string, string[]>();
-    keyAuthorizations.set(DEVICE_KEY_INFO_KEY.NAME_SPACES, namespaceNames);
-    deviceKeyInfo.set(
-      DEVICE_KEY_INFO_KEY.KEY_AUTHORIZATIONS,
-      keyAuthorizations,
-    );
-  }
   return deviceKeyInfo;
 }
 
