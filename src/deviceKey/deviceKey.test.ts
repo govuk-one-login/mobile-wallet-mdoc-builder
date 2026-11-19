@@ -96,5 +96,13 @@ describe("buildDeviceKeyInfo", () => {
       const keys = [...result.keys()];
       expect(keys).toEqual(["deviceKey"]);
     });
+
+    it("does not include keyAuthorizations", () => {
+      // ISO 18013-5 §9.1.2.4: keyAuthorizations lists the namespaces/data elements the
+      // device key may sign in DeviceSigned. We issue no DeviceSigned data elements, so
+      // it would be empty, and an empty KeyAuthorizations must be omitted.
+      const result = buildDeviceKeyInfo(TEST_KEY_P256.spki);
+      expect(result.has("keyAuthorizations")).toBe(false);
+    });
   });
 });
