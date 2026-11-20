@@ -43,38 +43,34 @@ describe("buildDeviceKeyInfo", () => {
   describe("SPKI import validation", () => {
     it("throws MdocBuilderError for invalid bytes", () => {
       const garbage = new Uint8Array([0x01, 0x02, 0x03, 0x04, 0x05]);
-      expect(() => buildDeviceKeyInfo(garbage, ["org.iso.18013.5.1"])).toThrow(
-        MdocBuilderError,
-      );
-      expect(() => buildDeviceKeyInfo(garbage, ["org.iso.18013.5.1"])).toThrow(
+      expect(() => buildDeviceKeyInfo(garbage)).toThrow(MdocBuilderError);
+      expect(() => buildDeviceKeyInfo(garbage)).toThrow(
         /failed to import SPKI/i,
       );
     });
 
     it("throws MdocBuilderError for a non-P-256 curve", () => {
-      expect(() =>
-        buildDeviceKeyInfo(TEST_KEY_P384_SPKI, ["org.iso.18013.5.1"]),
-      ).toThrow(MdocBuilderError);
-      expect(() =>
-        buildDeviceKeyInfo(TEST_KEY_P384_SPKI, ["org.iso.18013.5.1"]),
-      ).toThrow(/only P-256/i);
+      expect(() => buildDeviceKeyInfo(TEST_KEY_P384_SPKI)).toThrow(
+        MdocBuilderError,
+      );
+      expect(() => buildDeviceKeyInfo(TEST_KEY_P384_SPKI)).toThrow(
+        /only P-256/i,
+      );
     });
 
     it("throws MdocBuilderError for a non-EC key type", () => {
-      expect(() =>
-        buildDeviceKeyInfo(TEST_KEY_RSA_SPKI, ["org.iso.18013.5.1"]),
-      ).toThrow(MdocBuilderError);
-      expect(() =>
-        buildDeviceKeyInfo(TEST_KEY_RSA_SPKI, ["org.iso.18013.5.1"]),
-      ).toThrow(/unsupported key type/i);
+      expect(() => buildDeviceKeyInfo(TEST_KEY_RSA_SPKI)).toThrow(
+        MdocBuilderError,
+      );
+      expect(() => buildDeviceKeyInfo(TEST_KEY_RSA_SPKI)).toThrow(
+        /unsupported key type/i,
+      );
     });
   });
 
   describe("COSE_Key construction", () => {
     it("contains exactly four entries", () => {
-      const result = buildDeviceKeyInfo(TEST_KEY_P256.spki, [
-        "org.iso.18013.5.1",
-      ]);
+      const result = buildDeviceKeyInfo(TEST_KEY_P256.spki);
       const coseKey = result.get("deviceKey") as CoseKey;
       const keys = [...coseKey.keys()];
 
@@ -87,36 +83,26 @@ describe("buildDeviceKeyInfo", () => {
 
   describe("coordinate extraction", () => {
     it("extracts coordinates matching the original key", () => {
-      const result = buildDeviceKeyInfo(TEST_KEY_P256.spki, [
-        "org.iso.18013.5.1",
-      ]);
+      const result = buildDeviceKeyInfo(TEST_KEY_P256.spki);
       const coseKey = result.get("deviceKey") as CoseKey;
       expect(coseKey.get(-2)).toEqual(TEST_KEY_P256.x);
       expect(coseKey.get(-3)).toEqual(TEST_KEY_P256.y);
     });
   });
 
-  describe("keyAuthorizations", () => {
-    it("includes all provided namespace names", () => {
-      const namespaces = ["org.iso.18013.5.1", "org.iso.18013.5.1.GB"];
-      const result = buildDeviceKeyInfo(TEST_KEY_P256.spki, namespaces);
-      const keyAuth = result.get("keyAuthorizations") as Map<string, string[]>;
-      expect(keyAuth.get("nameSpaces")).toEqual(namespaces);
-    });
-
-    it("omits keyAuthorizations when namespace list is empty", () => {
-      const result = buildDeviceKeyInfo(TEST_KEY_P256.spki, []);
-      expect(result.has("keyAuthorizations")).toBe(false);
-    });
-  });
-
   describe("DeviceKeyInfo assembly", () => {
-    it("preserves insertion order: deviceKey first, keyAuthorizations second", () => {
-      const result = buildDeviceKeyInfo(TEST_KEY_P256.spki, [
-        "org.iso.18013.5.1",
-      ]);
+    it("contains only the deviceKey entry", () => {
+      const result = buildDeviceKeyInfo(TEST_KEY_P256.spki);
       const keys = [...result.keys()];
-      expect(keys).toEqual(["deviceKey", "keyAuthorizations"]);
+      expect(keys).toEqual(["deviceKey"]);
+    });
+
+    it("does not include keyAuthorizations", () => {
+      // ISO 18013-5 §9.1.2.4: keyAuthorizations lists the namespaces/data elements the
+      // device key may sign in DeviceSigned. We issue no DeviceSigned data elements, so
+      // it would be empty, and an empty KeyAuthorizations must be omitted.
+      const result = buildDeviceKeyInfo(TEST_KEY_P256.spki);
+      expect(result.has("keyAuthorizations")).toBe(false);
     });
   });
 });

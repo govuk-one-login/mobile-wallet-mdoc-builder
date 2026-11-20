@@ -23,12 +23,8 @@ function makeMsoInput(overrides?: Partial<MsoInput>): MsoInput {
     [-2, new Uint8Array(32).fill(0x01)],
     [-3, new Uint8Array(32).fill(0x02)],
   ]);
-  const keyAuthorizations = new Map<string, string[]>([
-    ["nameSpaces", ["org.iso.18013.5.1"]],
-  ]);
   const deviceKeyInfo: DeviceKeyInfo = new Map();
   deviceKeyInfo.set("deviceKey", coseKey);
-  deviceKeyInfo.set("keyAuthorizations", keyAuthorizations);
 
   const validityInfo: ValidityInfo = {
     signed: new Date("2026-07-01T12:00:00Z"),

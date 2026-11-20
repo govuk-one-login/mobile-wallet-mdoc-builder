@@ -57,15 +57,15 @@ CBOR-encoded. Final CBOR encoding happens in `assembleIssuerSigned`.
 
 ## Component Summary
 
-| Step | Component                  | Function                   | Responsibility                                                                      |
-| ---- | -------------------------- | -------------------------- | ----------------------------------------------------------------------------------- |
-| —    | **buildMdoc**              | `buildMdoc`                | Public entry point — orchestrates all internal components in order                  |
-| 1    | **Input Validation**       | `validateMdocBuilderInput` | Validates `MdocBuilderInput`, collecting all errors; `buildMdoc` throws on any      |
-| 2    | **Device Key Handling**    | `buildDeviceKeyInfo`       | Imports SPKI key via Web Crypto, builds COSE_Key (P-256), derives keyAuthorizations |
-| 3    | **IssuerSignedItems**      | `buildIssuerSignedItems`   | Wraps each element with digestID + random salt; computes SHA-256 valueDigests       |
-| 4    | **Credential Validity**    | `buildValidityInfo`        | Derives `signed`/`validFrom`; passes through `validUntil`/`expectedUpdate`          |
-| 5    | **MSO Construction**       | `buildMso`                 | Assembles the Mobile Security Object and CBOR-encodes it to `msoBytes`              |
-| 6    | **Sign + issuerAuth**      | `assembleIssuerAuth`       | Builds headers + `toBeSigned`, calls the signer, assembles COSE_Sign1 (issuerAuth)  |
-| 7    | **IssuerSigned Assembly**  | `assembleIssuerSigned`     | Combines encoded namespace items + issuerAuth into final CBOR payload               |
-| 8    | **Mdoc Output**            | `MdocOutput`               | Wraps raw bytes; exposes `.asBase64Url()`, `.asHex()`, `.asBytes()`                 |
-| —    | **CBOR Abstraction Layer** | `src/cbor`                 | Deterministic encoding, Tag 0/1004/24 support — isolates the `cbor2` dependency     |
+| Step | Component                  | Function                   | Responsibility                                                                     |
+| ---- | -------------------------- | -------------------------- | ---------------------------------------------------------------------------------- |
+| —    | **buildMdoc**              | `buildMdoc`                | Public entry point — orchestrates all internal components in order                 |
+| 1    | **Input Validation**       | `validateMdocBuilderInput` | Validates `MdocBuilderInput`, collecting all errors; `buildMdoc` throws on any     |
+| 2    | **Device Key Handling**    | `buildDeviceKeyInfo`       | Imports SPKI key via Web Crypto, builds COSE_Key (P-256)                           |
+| 3    | **IssuerSignedItems**      | `buildIssuerSignedItems`   | Wraps each element with digestID + random salt; computes SHA-256 valueDigests      |
+| 4    | **Credential Validity**    | `buildValidityInfo`        | Derives `signed`/`validFrom`; passes through `validUntil`/`expectedUpdate`         |
+| 5    | **MSO Construction**       | `buildMso`                 | Assembles the Mobile Security Object and CBOR-encodes it to `msoBytes`             |
+| 6    | **Sign + issuerAuth**      | `assembleIssuerAuth`       | Builds headers + `toBeSigned`, calls the signer, assembles COSE_Sign1 (issuerAuth) |
+| 7    | **IssuerSigned Assembly**  | `assembleIssuerSigned`     | Combines encoded namespace items + issuerAuth into final CBOR payload              |
+| 8    | **Mdoc Output**            | `MdocOutput`               | Wraps raw bytes; exposes `.asBase64Url()`, `.asHex()`, `.asBytes()`                |
+| —    | **CBOR Abstraction Layer** | `src/cbor`                 | Deterministic encoding, Tag 0/1004/24 support — isolates the `cbor2` dependency    |

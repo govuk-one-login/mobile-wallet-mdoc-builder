@@ -11,8 +11,9 @@ dual-format (ESM and CJS) npm package.
 - Validates a structured credential input and reports all problems at once as typed errors.
 - Builds the ISO 18013-5 `IssuerSigned` structure: per-namespace `IssuerSignedItem`s with SHA-256
   value digests, the Mobile Security Object (MSO), and the `issuerAuth` COSE_Sign1.
-- Embeds the holder's device public key (COSE_Key) and derives `keyAuthorizations` from your
-  namespaces.
+- Embeds the holder's device public key (COSE_Key) in the MSO. The MSO `deviceKeyInfo` contains only
+  the `deviceKey`; `keyAuthorizations` is omitted because this library issues no `DeviceSigned` data
+  elements.
 - Signs the MSO via a callback you provide, so your private key never enters the library.
 - Returns the credential as bytes, hex, or base64url.
 
@@ -110,7 +111,10 @@ setting it on a non-date value is a validation error.
 `deviceKey` is the holder's public key as **SPKI-encoded DER bytes** (`Uint8Array`). Only **ECDSA on the
 P-256 curve** is supported at this time — any other key type or curve is rejected with an
 `MdocBuilderError`. The library imports the key, builds the COSE_Key (EC2 / P-256, with `x` and `y`
-zero-padded to 32 bytes), and derives `keyAuthorizations.nameSpaces` from the namespaces you provide.
+zero-padded to 32 bytes).
+
+The MSO `deviceKeyInfo` contains only the `deviceKey`. `keyAuthorizations` is omitted because this
+library issues no `DeviceSigned` data elements.
 
 ## Validity info behaviour
 

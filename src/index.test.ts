@@ -7,8 +7,7 @@ import type { ValidityInfo } from "./validityInfo";
 import type { IssuerAuth } from "./issuerAuth";
 
 const mockValidate = vi.fn<(input: unknown) => ValidationError[]>();
-const mockBuildDeviceKeyInfo =
-  vi.fn<(spki: Uint8Array, names: string[]) => DeviceKeyInfo>();
+const mockBuildDeviceKeyInfo = vi.fn<(spki: Uint8Array) => DeviceKeyInfo>();
 const mockBuildIssuerSignedItems =
   vi.fn<(nameSpaces: unknown) => Promise<IssuerSignedItemResult>>();
 const mockBuildValidityInfo = vi.fn<(input: unknown) => ValidityInfo>();
@@ -29,8 +28,7 @@ vi.mock("./validation/index.js", () => ({
   validateMdocBuilderInput: (input: unknown) => mockValidate(input),
 }));
 vi.mock("./deviceKey/index.js", () => ({
-  buildDeviceKeyInfo: (spki: Uint8Array, names: string[]) =>
-    mockBuildDeviceKeyInfo(spki, names),
+  buildDeviceKeyInfo: (spki: Uint8Array) => mockBuildDeviceKeyInfo(spki),
 }));
 vi.mock("./issuerSigned/index.js", () => ({
   buildIssuerSignedItems: (nameSpaces: unknown) =>
@@ -136,10 +134,7 @@ describe("buildMdoc", () => {
       await buildMdoc(input, sign);
 
       expect(mockValidate).toHaveBeenCalledWith(input);
-      expect(mockBuildDeviceKeyInfo).toHaveBeenCalledWith(DEVICE_KEY, [
-        "org.iso.18013.5.1",
-        "uk.gov.wallet.1",
-      ]);
+      expect(mockBuildDeviceKeyInfo).toHaveBeenCalledWith(DEVICE_KEY);
       expect(mockBuildIssuerSignedItems).toHaveBeenCalledWith(input.nameSpaces);
       expect(mockBuildValidityInfo).toHaveBeenCalledWith(
         input.credentialValidity,
